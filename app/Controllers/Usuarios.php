@@ -3,6 +3,7 @@
 namespace App\Controllers;
 
 use App\Controllers\BaseController;
+use App\Models\UsuarioModel;
 
 class Usuarios extends BaseController
 {
@@ -40,9 +41,10 @@ class Usuarios extends BaseController
 
         $data = [];
         foreach($usuarios as $usuario){
+
             $data[] = [
                 'imagem' => $usuario->imagem,
-                'nome' => esc($usuario->nome),
+                'nome' => anchor("usuarios/exibir/$usuario->id", esc($usuario->nome), 'title="Exibir usuário '.esc($usuario->nome).'"'),
                 'email' => $usuario->email,
                 'ativo' => ($usuario->ativo == true ? '<i class="fa fa-unlock text-success"></i>&nbsp;Ativo' : '<i class="fa fa-lock text-warning"></i>&nbsp;Inativo'),
             ];
@@ -53,5 +55,31 @@ class Usuarios extends BaseController
         ];
 
         return $this->response->setJSON($retorno);
+    }
+
+    public function exibir (int $id = null){
+        $usuario  = $this->buscaUsuarioOu404($id);
+
+        $data = [
+            'titulo' => "Detalhando o usuário ".esc($usuario->nome),
+            'usuario' => $usuario
+        ];
+
+        return view('Usuarios/exibir', $data);
+    }
+
+
+    /**
+     * Método que recupera o usuário
+     *
+     * @param integer $id
+     * @return Expeptions|object
+     */
+    private function buscaUsuarioOu404(int $id = null){
+        if(!$id || !$usuario = $this->usuarioModel->withDeleted(true)->find($id)){
+            throw \CodeIgniter\Exceptions\PageNotFoundException::forPageNotFound("Não encontramos o usuário $id");
+        }
+
+        return $usuario;
     }
 }
