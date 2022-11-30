@@ -23,10 +23,11 @@ class Usuarios extends BaseController
         return view('Usuarios/index', $data);
     }
 
-    public function recuperaUsuarios(){
-        // if(!$this->request->isAJAX()){
-        //     return redirect()->back();
-        // }
+    public function recuperaUsuarios()
+    {
+        if (!$this->request->isAJAX()) {
+            return redirect()->back();
+        }
 
         $atributos = [
             'id',
@@ -37,14 +38,14 @@ class Usuarios extends BaseController
         ];
 
         $usuarios = $this->usuarioModel->select($atributos)
-                                       ->findAll();
+            ->findAll();
 
         $data = [];
-        foreach($usuarios as $usuario){
+        foreach ($usuarios as $usuario) {
 
             $data[] = [
                 'imagem' => $usuario->imagem,
-                'nome' => anchor("usuarios/exibir/$usuario->id", esc($usuario->nome), 'title="Exibir usuário '.esc($usuario->nome).'"'),
+                'nome' => anchor("usuarios/exibir/$usuario->id", esc($usuario->nome), 'title="Exibir usuário ' . esc($usuario->nome) . '"'),
                 'email' => $usuario->email,
                 'ativo' => ($usuario->ativo == true ? '<i class="fa fa-unlock text-success"></i>&nbsp;Ativo' : '<i class="fa fa-lock text-warning"></i>&nbsp;Inativo'),
             ];
@@ -57,26 +58,54 @@ class Usuarios extends BaseController
         return $this->response->setJSON($retorno);
     }
 
-    public function exibir (int $id = null){
+    public function exibir(int $id = null)
+    {
         $usuario  = $this->buscaUsuarioOu404($id);
 
         $data = [
-            'titulo' => "Detalhando o usuário ".esc($usuario->nome),
+            'titulo' => "Detalhando o usuário " . esc($usuario->nome),
             'usuario' => $usuario
         ];
 
         return view('Usuarios/exibir', $data);
     }
 
-    public function editar (int $id = null){
+    public function editar(int $id = null)
+    {
         $usuario  = $this->buscaUsuarioOu404($id);
 
         $data = [
-            'titulo' => "Editando o usuário ".esc($usuario->nome),
+            'titulo' => "Editando o usuário " . esc($usuario->nome),
             'usuario' => $usuario
         ];
 
         return view('Usuarios/editar', $data);
+    }
+
+    public function atualizar()
+    {
+        if (!$this->request->isAJAX()) {
+            return redirect()->back();
+        }
+
+        $retorno['token'] = csrf_hash();
+
+        // $retorno['info'] = "Essa é uma mensagem de informação";
+        $retorno['erro'] = "Essa é uma mensagem de erro";
+        $retorno['erros_model'] = [
+            'nome' => 'O nome é obrigatorio',
+            'email' => 'E-mail inválido',
+            'password' => 'A senha é muito curta'
+        ];
+
+        return $this->response->setJSON($retorno);
+
+
+        $post = $this->request->getPost();
+
+        echo '<pre>';
+        print_r($post);
+        exit;
     }
 
 
@@ -86,8 +115,9 @@ class Usuarios extends BaseController
      * @param integer $id
      * @return Expeptions|object
      */
-    private function buscaUsuarioOu404(int $id = null){
-        if(!$id || !$usuario = $this->usuarioModel->withDeleted(true)->find($id)){
+    private function buscaUsuarioOu404(int $id = null)
+    {
+        if (!$id || !$usuario = $this->usuarioModel->withDeleted(true)->find($id)) {
             throw \CodeIgniter\Exceptions\PageNotFoundException::forPageNotFound("Não encontramos o usuário $id");
         }
 
