@@ -26,7 +26,7 @@
       <?php echo $this->include('Usuarios/_form'); ?>
       <div class="form-group mt-5 mb-2">
         <input id="btn-salvar" value="Salvar" class="btn btn-danger mr-2" type="submit">
-        <a href="<?php echo site_url("usuarios/exibir/$usuario->id"); ?>" class="btn btn-secondary ml-2">Voltar</a>
+        <a href="<?php echo site_url("usuarios"); ?>" class="btn btn-secondary ml-2">Voltar</a>
       </div>
 
       <?php echo form_close() ?>
@@ -47,7 +47,7 @@
       e.preventDefault();
       $.ajax({
         type: 'POST',
-        url: '<?php echo site_url('usuarios/atualizar'); ?>',
+        url: '<?php echo site_url('usuarios/cadastrar'); ?>',
         data: new FormData(this),
         dataType: 'json',
         contentType: false,
@@ -67,7 +67,7 @@
             if (response.info) {
               $("#response").html('<div class="alert alert-info" role="alert">'+ response.info +'</div>');
             }else{
-              window.location.href = "<?php echo site_url("usuarios/exibir/$usuario->id"); ?>";
+              window.location.href = "<?php echo site_url("usuarios/exibir/"); ?>" + response.id;
             }
           } 
 

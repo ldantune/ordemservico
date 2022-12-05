@@ -4,7 +4,7 @@
 </div>
 
 <div class="form-group">
-  <label class="form-control-label">Nome Completo</label>
+  <label class="form-control-label">E-mail</label>
   <input type="email" name="email" placeholder="Insira o email de acesso" class="form-control" value="<?php echo esc($usuario->email); ?>">
 </div>
 

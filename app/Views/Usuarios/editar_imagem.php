@@ -21,9 +21,13 @@
 
       </div>
 
-      <?php echo form_open('/', ['id' => 'form'], ['id' => "$usuario->id"]) ?>
+      <?php echo form_open_multipart('/', ['id' => 'form'], ['id' => "$usuario->id"]) ?>
 
-      <?php echo $this->include('Usuarios/_form'); ?>
+      <div class="form-group">
+        <label class="form-control-label">Escolha uma imagem</label>
+        <input type="file" name="imagem" class="form-control">
+      </div>
+
       <div class="form-group mt-5 mb-2">
         <input id="btn-salvar" value="Salvar" class="btn btn-danger mr-2" type="submit">
         <a href="<?php echo site_url("usuarios/exibir/$usuario->id"); ?>" class="btn btn-secondary ml-2">Voltar</a>
@@ -47,7 +51,7 @@
       e.preventDefault();
       $.ajax({
         type: 'POST',
-        url: '<?php echo site_url('usuarios/atualizar'); ?>',
+        url: '<?php echo site_url('usuarios/upload'); ?>',
         data: new FormData(this),
         dataType: 'json',
         contentType: false,
@@ -64,18 +68,14 @@
           $('[name=csrf_ordem]').val(response.token);
 
           if (!response.erro) {
-            if (response.info) {
-              $("#response").html('<div class="alert alert-info" role="alert">'+ response.info +'</div>');
-            }else{
-              window.location.href = "<?php echo site_url("usuarios/exibir/$usuario->id"); ?>";
-            }
-          } 
+            window.location.href = "<?php echo site_url("usuarios/exibir/$usuario->id"); ?>";
+          }
 
-          if(response.erro){
-            $("#response").html('<div class="alert alert-danger" role="alert">'+ response.erro +'</div>');
-            if(response.erros_model){
-              $.each(response.erros_model, function(key, value){
-                $("#response").append('<ul class="list-unstyled"><li class="text-danger">'+value+'</li></ul>');
+          if (response.erro) {
+            $("#response").html('<div class="alert alert-danger" role="alert">' + response.erro + '</div>');
+            if (response.erros_model) {
+              $.each(response.erros_model, function(key, value) {
+                $("#response").append('<ul class="list-unstyled"><li class="text-danger">' + value + '</li></ul>');
               });
             }
           }
@@ -88,7 +88,7 @@
       });
     });
 
-    $("#form").submit(function(){
+    $("#form").submit(function() {
       $(this).find(":submit").attr('disabled', 'disabled');
     })
   });
