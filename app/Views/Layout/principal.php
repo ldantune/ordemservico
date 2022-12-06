@@ -200,6 +200,7 @@
         <li class="<?php echo (url_is('/') ? 'active' : '') ?>"><a href="<?php echo site_url('/') ?>"> <i class="icon-home"></i>Home </a></li>
 
         <li class="<?php echo (url_is('usuarios*') ? 'active' : '') ?>"><a href="<?php echo site_url('usuarios') ?>"> <i class="icon-user"></i>Usuários </a></li>
+        <li class="<?php echo (url_is('grupos*') ? 'active' : '') ?>"><a href="<?php echo site_url('grupos') ?>"> <i class="icon-settings"></i>Grupos & Permissões </a></li>
         <li><a href="charts.html"> <i class="fa fa-bar-chart"></i>Charts </a></li>
         <li><a href="forms.html"> <i class="icon-padnote"></i>Forms </a></li>
         <li><a href="#exampledropdownDropdown" aria-expanded="false" data-toggle="collapse"> <i class="icon-windows"></i>Example dropdown </a>
@@ -251,6 +252,14 @@
 
   <!-- -->
   <?php echo $this->renderSection('scripts'); ?>
+
+  <script>
+    $(function() {
+      $('[data-toggle="popover"]').popover({
+        html: true
+      })
+    })
+  </script>
 </body>
 
 </html>
