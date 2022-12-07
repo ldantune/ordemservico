@@ -20,7 +20,7 @@ class GrupoModel extends Model
 
     // Validation
     protected $validationRules = [
-        'nome'    => 'required|max_length[230]|is_unique[usuarios.nome,id,{id}]',
+        'nome'    => 'required|max_length[230]|is_unique[grupos.nome,id,{id}]',
         'descricao'     => 'required|min_length[3]|max_length[120]',
     ];
     protected $validationMessages = [
