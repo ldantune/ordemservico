@@ -9,10 +9,14 @@ use App\Entities\Usuario;
 class Usuarios extends BaseController
 {
     private $usuarioModel;
+    private $grupoUsuarioModel;
+    private $grupoModel;
 
     public function __construct()
     {
         $this->usuarioModel = new \App\Models\UsuarioModel();
+        $this->grupoUsuarioModel = new \App\Models\GrupoUsuarioModel();
+        $this->grupoModel = new \App\Models\GrupoModel();
     }
 
     public function index()
@@ -317,7 +321,7 @@ class Usuarios extends BaseController
         return view('Usuarios/excluir', $data);
     }
 
-    public function desfazerexclusao(int $id = null)
+    public function desfazerExclusao(int $id = null)
     {
         $usuario  = $this->buscaUsuarioOu404($id);
 
@@ -331,6 +335,90 @@ class Usuarios extends BaseController
         return redirect()->back()->with('sucesso', "Usuário $usuario->nome recuperado com sucesso!");
 
         
+    }
+
+    public function grupos(int $id = null)
+    {
+        $usuario  = $this->buscaUsuarioOu404($id);
+
+        $usuario->grupos = $this->grupoUsuarioModel->recuperaGruposDoUsuario($usuario->id, 5);
+        $usuario->pager = $this->grupoUsuarioModel->pager;
+
+        $data = [
+            'titulo' => "Gerenciando os grupos de acesso do usuário " . esc($usuario->nome),
+            'usuario' => $usuario
+        ];
+
+        if(in_array(2, array_column($usuario->grupos, 'grupo_id'))){
+            return redirect()->to(site_url("usuarios/exibir/$usuario->id"))
+                            ->with('info', "Esse usuário é um cliente, portando, não é necessário atribuí-lo ou removê-lo de outros grupos de acesso");
+        }
+
+
+        if(!empty($usuario->grupos)){
+
+            $gruposExistentes = array_column($usuario->grupos, 'grupo_id');
+
+            $data['gruposDisponiveis'] = $this->grupoModel
+                                            ->where('id !=', 2)
+                                            ->whereNotIn('id', $gruposExistentes)
+                                            ->findAll();
+        }else{
+            $data['gruposDisponiveis'] = $this->grupoModel
+                                            ->where('id !=', 2)
+                                            ->findAll();
+        }
+
+        return view('Usuarios/grupos', $data);
+    }
+
+    public function salvargrupos()
+    {
+        if (!$this->request->isAJAX()) {
+            return redirect()->back();
+        }
+
+        // Envio o hash do token do form
+        $retorno['token'] = csrf_hash();
+
+        // Recupero o post da requisição
+        $post = $this->request->getPost();
+
+
+        //Validamos a existencia do usuário
+        $usuario = $this->buscaUsuarioOu404($post['id']);
+
+        if(empty($post['grupo_id'])){
+            //Retornamos os erros de validação
+            $retorno['erro'] = 'Por favor verifique os erros abaixo e tente novamente';
+            $retorno['erros_model'] = ['grupo_id' => 'Escolha um ou mais grupos para salvar'];
+
+            return $this->response->setJSON($retorno);
+        }
+        
+
+        if(in_array(2, $post['grupo_id'])){
+            //Retornamos os erros de validação
+            $retorno['erro'] = 'Por favor verifique os erros abaixo e tente novamente';
+            $retorno['erros_model'] = ['grupo_id' => 'O grupo de Clientes não pode ser atribuido de forma manual'];
+
+            return $this->response->setJSON($retorno);
+        }
+
+        $grupoPush = [];
+
+        foreach($post['grupo_id'] as $grupo){
+            array_push($grupoPush,[
+                'grupo_id' => $grupo,
+                'usuario_id' => $usuario->id
+            ]);
+        }
+
+        $this->grupoUsuarioModel->insertBatch($grupoPush);
+
+        session()->setFlashdata('sucesso', 'Dados salvos com sucesso!');
+        return $this->response->setJSON($retorno);
+
     }
 
 
