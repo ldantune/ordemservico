@@ -8,10 +8,14 @@ use App\Entities\Grupo;
 class Grupos extends BaseController
 {
     private $grupoModel;
+    private $grupoPermissaoModel;
+    private $permissaoModel;
 
     public function __construct()
     {
         $this->grupoModel = new \App\Models\GrupoModel();
+        $this->grupoPermissaoModel = new \App\Models\GrupoPermissaoModel();
+        $this->permissaoModel = new \App\Models\PermissaoModel();
     }
 
     public function index()
@@ -239,14 +243,82 @@ class Grupos extends BaseController
                 ->with('info', 'Não é necessário atribuir ou remover permissões de acesso para o grupo de Clientes');
         }
 
-        
+        if($grupo->id > 2){
+
+            $grupo->permissoes = $this->grupoPermissaoModel->recuperaPermissoesDoGrupo($grupo->id, 5);
+            $grupo->pager = $this->grupoPermissaoModel->pager;
+
+        }
 
         $data = [
             'titulo' => "Gerenciando as permissões do grupo de acesso " . esc($grupo->nome),
             'grupo' => $grupo
         ];
 
+        if(!empty($grupo->permissoes)){
+            $permissoesExistentes = array_column($grupo->permissoes, 'permissao_id');
+
+            $data['permissoesDisponiveis'] = $this->permissaoModel->whereNotIn('id', $permissoesExistentes)->findAll();
+        }else{
+            $data['permissoesDisponiveis'] = $this->permissaoModel->findAll();
+        }
+
         return view('Grupos/permissoes', $data);
+    }
+
+    public function salvarpermissoes()
+    {
+        if (!$this->request->isAJAX()) {
+            return redirect()->back();
+        }
+
+        // Envio o hash do token do form
+        $retorno['token'] = csrf_hash();
+
+        // Recupero o post da requisição
+        $post = $this->request->getPost();
+
+
+        //Validamos a existencia do usuário
+        $grupo = $this->buscaGrupoOu404($post['id']);
+
+        if(empty($post['permissao_id'])){
+            //Retornamos os erros de validação
+            $retorno['erro'] = 'Por favor verifique os erros abaixo e tente novamente';
+            $retorno['erros_model'] = ['permissao_id' => 'Escolha uma ou mais permissões para salvar'];
+
+            return $this->response->setJSON($retorno);
+        }
+
+        $permissaoPush = [];
+
+        foreach($post['permissao_id'] as $permissao){
+            array_push($permissaoPush,[
+                'grupo_id' => $grupo->id,
+                'permissao_id' => $permissao
+            ]);
+        }
+
+        $this->grupoPermissaoModel->insertBatch($permissaoPush);
+
+        session()->setFlashdata('sucesso', 'Dados salvos com sucesso!');
+        return $this->response->setJSON($retorno);
+    }
+
+    public function removepermissao(int $principal_id = null){
+
+
+
+        if ($this->request->getMethod() === 'post') {
+
+            $this->grupoPermissaoModel->delete($principal_id);
+
+            return redirect()->back()->with('sucesso', 'Permissão removida com sucesso!');
+        }
+
+        return redirect()->back();
+
+        
     }
 
     /**
