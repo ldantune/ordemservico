@@ -293,7 +293,7 @@ class Usuarios extends BaseController
     {
         $usuario  = $this->buscaUsuarioOu404($id);
 
-        if($usuario->deletado_em != null){
+        if ($usuario->deletado_em != null) {
             return redirect()->back()->with('info', "Esse usuário já encotra-se excluido");
         }
 
@@ -325,16 +325,14 @@ class Usuarios extends BaseController
     {
         $usuario  = $this->buscaUsuarioOu404($id);
 
-        if($usuario->deletado_em == null){
+        if ($usuario->deletado_em == null) {
             return redirect()->back()->with('info', "Apenas usuários excluídos podem ser recuparados");
         }
 
-        
+
         $usuario->deletado_em = null;
         $this->usuarioModel->protect(false)->save($usuario);
         return redirect()->back()->with('sucesso', "Usuário $usuario->nome recuperado com sucesso!");
-
-        
     }
 
     public function grupos(int $id = null)
@@ -349,24 +347,33 @@ class Usuarios extends BaseController
             'usuario' => $usuario
         ];
 
-        if(in_array(2, array_column($usuario->grupos, 'grupo_id'))){
+        $grupoCliente = 2;
+        if (in_array($grupoCliente, array_column($usuario->grupos, 'grupo_id'))) {
             return redirect()->to(site_url("usuarios/exibir/$usuario->id"))
-                            ->with('info', "Esse usuário é um cliente, portando, não é necessário atribuí-lo ou removê-lo de outros grupos de acesso");
+                ->with('info', "Esse usuário é um cliente, portando, não é necessário atribuí-lo ou removê-lo de outros grupos de acesso");
+        }
+
+        $grupoAdmin = 1;
+        if (in_array($grupoAdmin, array_column($usuario->grupos, 'grupo_id'))) {
+            $usuario->full_control = true;
+            return view('Usuarios/grupos', $data);
+        }else {
+            $usuario->full_control = false;
         }
 
 
-        if(!empty($usuario->grupos)){
+        if (!empty($usuario->grupos)) {
 
             $gruposExistentes = array_column($usuario->grupos, 'grupo_id');
 
             $data['gruposDisponiveis'] = $this->grupoModel
-                                            ->where('id !=', 2)
-                                            ->whereNotIn('id', $gruposExistentes)
-                                            ->findAll();
-        }else{
+                ->where('id !=', 2)
+                ->whereNotIn('id', $gruposExistentes)
+                ->findAll();
+        } else {
             $data['gruposDisponiveis'] = $this->grupoModel
-                                            ->where('id !=', 2)
-                                            ->findAll();
+                ->where('id !=', 2)
+                ->findAll();
         }
 
         return view('Usuarios/grupos', $data);
@@ -388,16 +395,16 @@ class Usuarios extends BaseController
         //Validamos a existencia do usuário
         $usuario = $this->buscaUsuarioOu404($post['id']);
 
-        if(empty($post['grupo_id'])){
+        if (empty($post['grupo_id'])) {
             //Retornamos os erros de validação
             $retorno['erro'] = 'Por favor verifique os erros abaixo e tente novamente';
             $retorno['erros_model'] = ['grupo_id' => 'Escolha um ou mais grupos para salvar'];
 
             return $this->response->setJSON($retorno);
         }
-        
 
-        if(in_array(2, $post['grupo_id'])){
+
+        if (in_array(2, $post['grupo_id'])) {
             //Retornamos os erros de validação
             $retorno['erro'] = 'Por favor verifique os erros abaixo e tente novamente';
             $retorno['erros_model'] = ['grupo_id' => 'O grupo de Clientes não pode ser atribuido de forma manual'];
@@ -405,10 +412,27 @@ class Usuarios extends BaseController
             return $this->response->setJSON($retorno);
         }
 
+        if (in_array(1, $post['grupo_id'])) {
+
+            $grupoAdmin = [
+                'grupo_id' => 1,
+                'usuario_id' => $usuario->id
+            ];
+
+            $this->grupoUsuarioModel->insert($grupoAdmin);
+            $this->grupoUsuarioModel->where('grupo_id !=', 1)
+                                    ->where('usuario_id', $usuario->id)
+                                    ->delete();
+
+            session()->setFlashdata('sucesso', 'Dados salvos com sucesso!');
+            session()->setFlashdata('info', 'Notamos que o Grupo Administrador foi informado, portanto não há necessidade de informar outros grupos, pois apenas o Administrador será associado ao usuário!');
+            return $this->response->setJSON($retorno);
+        }
+
         $grupoPush = [];
 
-        foreach($post['grupo_id'] as $grupo){
-            array_push($grupoPush,[
+        foreach ($post['grupo_id'] as $grupo) {
+            array_push($grupoPush, [
                 'grupo_id' => $grupo,
                 'usuario_id' => $usuario->id
             ]);
@@ -418,7 +442,23 @@ class Usuarios extends BaseController
 
         session()->setFlashdata('sucesso', 'Dados salvos com sucesso!');
         return $this->response->setJSON($retorno);
+    }
+    public function removeGrupo(int $principal_id = null){
 
+        if($this->request->getMethod() === 'post'){
+
+            $grupoUsuario = $this->buscaGrupoUsuarioOu404($principal_id);
+
+            if($grupoUsuario->grupo_id == 2){
+                return redirect()->to(site_url("usuarios/exibir/$grupoUsuario->usuario_id"))->with("info", "Não é permitida a exclusão do usuário do grupo de Clientes");
+            }
+
+            $this->grupoUsuarioModel->delete($principal_id);
+            return redirect()->back()->with("sucesso", "Usuário removido do grupo de acesso com sucesso!");
+
+        }
+
+        return redirect()->back();
     }
 
 
@@ -435,6 +475,15 @@ class Usuarios extends BaseController
         }
 
         return $usuario;
+    }
+
+    private function buscaGrupoUsuarioOu404(int $principal_id = null)
+    {
+        if (!$principal_id || !$grupoUsuario = $this->grupoUsuarioModel->find($principal_id)) {
+            throw \CodeIgniter\Exceptions\PageNotFoundException::forPageNotFound("Não encontramos o registro de associação ao grupo de acesso $principal_id");
+        }
+
+        return $grupoUsuario;
     }
 
     private function removeImagemDoFileSystem(string $imagem)

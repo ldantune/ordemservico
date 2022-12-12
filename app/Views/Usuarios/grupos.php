@@ -42,11 +42,22 @@
 
       <?php if (empty($gruposDisponiveis)) : ?>
 
-        <div class="text-center">
-          <p class="contributions text-warning mt-0">
-            Esse usuário já possui todas as permissões de acesso!
-          </p>
-        </div>
+        <?php if ($usuario->full_control == false) : ?>
+          <div class="text-center">
+            <p class="contributions text-warning mt-0">
+              Esse usuário já possui todas as permissões de acesso!
+            </p>
+          </div>
+        <?php else : ?>
+          <div class="text-center">
+            <p class="contributions text-white mt-0">
+              Esse usuário faz parte do Grupo Administrador. Para associá-lo a outros grupos, primeiro remova-o do grupo de Administrador!
+            </p>
+          </div>
+        <?php endif; ?>
+
+
+
         <div class="form-group mt-2 mb-2">
           <a href="<?php echo site_url("usuarios/exibir/$usuario->id"); ?>" class="btn btn-secondary ml-2">Voltar</a>
         </div>
@@ -113,18 +124,18 @@
               <?php foreach ($usuario->grupos as $info) : ?>
                 <tr>
                   <td><?php echo esc($info->nome) ?></td>
-                  <td><?php echo ellipsize($info->descricao, 32,.5);?></td>
+                  <td><?php echo ellipsize($info->descricao, 32, .5); ?></td>
 
                   <td>
-                    <?php 
-                      $atributos = [
-                        'onSubmit' => "return confirm('Tem certeza da exclusão da permissão?');",
-                      ];
-                    
+                    <?php
+                    $atributos = [
+                      'onSubmit' => "return confirm('Tem certeza da exclusão do grupo de acesso?');",
+                    ];
+
                     ?>
 
                     <?php echo form_open("usuarios/removegrupo/$info->principal_id", $atributos) ?>
-                      <button type="submit" class="btn btn-sm btn-danger">Excluir</button>
+                    <button type="submit" class="btn btn-sm btn-danger">Excluir</button>
 
                     <?php echo form_close(); ?>
                   </td>
