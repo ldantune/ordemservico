@@ -2,7 +2,9 @@
 
 namespace App\Models;
 
+use App\Entities\Usuario;
 use CodeIgniter\Model;
+use App\Libraries\Token;
 
 class UsuarioModel extends Model
 {
@@ -92,5 +94,27 @@ class UsuarioModel extends Model
                     ->where('usuarios.id', $usuario_id)
                     ->groupBy('permissoes.nome')
                     ->findAll();
+    }
+
+    public function buscaUsuarioParaRedefinirSenha(string $token){
+        $token = new Token($token);
+
+        $tokenHash = $token->getHash();
+
+        $usuario = $this->where('reset_hash', $tokenHash)
+                        ->where('deletado_em', null)
+                        ->first();
+
+        if($usuario === null){
+            return null;
+        }
+
+        if($usuario->reset_expira_em < date('Y-m-d H:i:s')){
+            return null;
+        }
+
+        return $usuario;
+
+
     }
 }

@@ -499,7 +499,7 @@ class Usuarios extends BaseController
         }
 
         if ($this->usuarioModel->save($usuario)) {
-            $retorno['successo'] = 'Senha atualizada com sucesso!';
+            $retorno['sucesso'] = 'Senha atualizada com sucesso!';
             return $this->response->setJSON($retorno);
         }
 

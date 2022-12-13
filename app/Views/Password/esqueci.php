@@ -19,7 +19,7 @@
                 <div class="logo">
                     <h1><?php echo $titulo; ?></h1>
                 </div>
-                <p>Lorem ipsum dolor sit amet, consectetur adipisicing elit.</p>
+                <p>Informe seu e-mail de acesso para iniciarmos a recuperação da senha.</p>
             </div>
         </div>
     </div>
@@ -35,17 +35,14 @@
 
                 <div class="form-group">
                     <input id="login-username" type="text" name="email" required data-msg="Por favor informe seu e-mail" class="input-material">
-                    <label for="login-username" class="label-material">E-mail</label>
+                    <label for="login-username" class="label-material">Informe seu e-mail de acesso</label>
                 </div>
-                <div class="form-group">
-                    <input id="login-password" type="password" name="password" required data-msg="Por fazor informe sua senha" class="input-material">
-                    <label for="login-password" class="label-material">Senha</label>
-                </div>
-                <input type="submit" id="btn-login" class="btn btn-primary " value="Entrar">
+
+                <input type="submit" id="btn-esqueci" class="btn btn-primary " value="Começar">
                 <!-- This should be submit button but I replaced it with <a> for demo purposes-->
 
                 <?php echo form_close(); ?>
-                <a href="<?php echo site_url('esqueci');?>" class="forgot-pass mt-3">Esqueceu a sua senha?</a>
+                <a href="<?php echo site_url('login');?>" class="forgot-pass mt-3">Lembrou a sua senha de acesso?</a>
 
             </div>
         </div>
@@ -62,7 +59,7 @@
             e.preventDefault();
             $.ajax({
                 type: 'POST',
-                url: '<?php echo site_url('login/criar'); ?>',
+                url: '<?php echo site_url('password/processaesqueci'); ?>',
                 data: new FormData(this),
                 dataType: 'json',
                 contentType: false,
@@ -70,17 +67,17 @@
                 processData: false,
                 beforeSend: function() {
                     $("#response").html('');
-                    $("#btn-login").val('Por favor aguarde...');
+                    $("#btn-esqueci").val('Por favor aguarde...');
                 },
                 success: function(response) {
 
-                    $("#btn-login").val('Entrar');
-                    $("#btn-login").removeAttr("disabled");
+                    $("#btn-esqueci").val('Começar');
+                    $("#btn-esqueci").removeAttr("disabled");
                     $('[name=csrf_ordem]').val(response.token);
 
                     if (!response.erro) {
 
-                        window.location.href = "<?php echo site_url(); ?>" + response.redirect;
+                        window.location.href = "<?php echo site_url('password/resetenviado'); ?>";
                     }
 
                     if (response.erro) {
@@ -96,8 +93,8 @@
                 },
                 error: function() {
                     alert('Não foi possível processar a solicitação. Por favor entre em contato com suporte técnico.');
-                    $("#btn-login").val('Entrar');
-                    $("#btn-login").removeAttr("disabled");
+                    $("#btn-esqueci").val('Começar');
+                    $("#btn-esqueci").removeAttr("disabled");
                 }
             });
         });

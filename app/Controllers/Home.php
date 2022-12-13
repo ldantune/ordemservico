@@ -8,7 +8,7 @@ class Home extends BaseController
 {
     public function index()
     {
-        //dd(usuario_logado());
+
         $data = [
             'titulo' => 'Home'
         ];
@@ -18,7 +18,7 @@ class Home extends BaseController
     // public function login(){
     //     $autenticacao = service('autenticacao');
 
-        
+
 
     //     //$autenticacao->login('bruen.ezequiel@yundt.com', '123456');
     //     $usuario = $autenticacao->pegaUsuarioLogado();
@@ -28,4 +28,24 @@ class Home extends BaseController
 
     //     //dd($autenticacao->estaLogado());
     // }
+
+    public function email()
+    {
+        //$email = \Config\Services::email();
+        $email = service('email');
+
+        $email->setFrom('no-reply@ordem.com', 'Ordem de serviço Ltda');
+        $email->setTo('ldantune@gmail.com');
+
+
+        $email->setSubject('Recuperação de senha');
+        $email->setMessage('Iniciando a recuperação de senha.');
+
+        if($email->send()){
+            echo 'Email enviado';
+        }else{
+            $email->printDebugger();
+        }
+        
+    }
 }
