@@ -3,7 +3,6 @@
 namespace App\Controllers;
 
 use App\Controllers\BaseController;
-use App\Models\UsuarioModel;
 use App\Entities\Usuario;
 
 class Usuarios extends BaseController
@@ -357,7 +356,7 @@ class Usuarios extends BaseController
         if (in_array($grupoAdmin, array_column($usuario->grupos, 'grupo_id'))) {
             $usuario->full_control = true;
             return view('Usuarios/grupos', $data);
-        }else {
+        } else {
             $usuario->full_control = false;
         }
 
@@ -421,8 +420,8 @@ class Usuarios extends BaseController
 
             $this->grupoUsuarioModel->insert($grupoAdmin);
             $this->grupoUsuarioModel->where('grupo_id !=', 1)
-                                    ->where('usuario_id', $usuario->id)
-                                    ->delete();
+                ->where('usuario_id', $usuario->id)
+                ->delete();
 
             session()->setFlashdata('sucesso', 'Dados salvos com sucesso!');
             session()->setFlashdata('info', 'Notamos que o Grupo Administrador foi informado, portanto não há necessidade de informar outros grupos, pois apenas o Administrador será associado ao usuário!');
@@ -443,22 +442,73 @@ class Usuarios extends BaseController
         session()->setFlashdata('sucesso', 'Dados salvos com sucesso!');
         return $this->response->setJSON($retorno);
     }
-    public function removeGrupo(int $principal_id = null){
+    public function removeGrupo(int $principal_id = null)
+    {
 
-        if($this->request->getMethod() === 'post'){
+        if ($this->request->getMethod() === 'post') {
 
             $grupoUsuario = $this->buscaGrupoUsuarioOu404($principal_id);
 
-            if($grupoUsuario->grupo_id == 2){
+            if ($grupoUsuario->grupo_id == 2) {
                 return redirect()->to(site_url("usuarios/exibir/$grupoUsuario->usuario_id"))->with("info", "Não é permitida a exclusão do usuário do grupo de Clientes");
             }
 
             $this->grupoUsuarioModel->delete($principal_id);
             return redirect()->back()->with("sucesso", "Usuário removido do grupo de acesso com sucesso!");
-
         }
 
         return redirect()->back();
+    }
+
+    public function editarSenha()
+    {
+
+        $data = [
+            'titulo' => 'Edite a sua senha de acesso',
+        ];
+
+        return view('Usuarios/editar_senha', $data);
+    }
+
+    public function atualizarSenha()
+    {
+
+        if (!$this->request->isAJAX()) {
+            return redirect()->back();
+        }
+
+        // Envio o hash do token do form
+        $retorno['token'] = csrf_hash();
+
+        $currentPassword = $this->request->getPost('current_password');
+
+        $usuario = usuario_logado();
+
+        if ($usuario->verificaPassword($currentPassword) === false) {
+            $retorno['erro'] = 'Por favor verifique os erros abaixo e tente novamente';
+            $retorno['erros_model'] = ['current_password' => 'Senha atual inválida'];
+
+            return $this->response->setJSON($retorno);
+        }
+
+        $usuario->fill($this->request->getPost());
+
+        if ($usuario->hasChanged() == false) {
+            $retorno['info'] = 'Não há dados para serem atualizados';
+            return $this->response->setJSON($retorno);
+        }
+
+        if ($this->usuarioModel->save($usuario)) {
+            $retorno['successo'] = 'Senha atualizada com sucesso!';
+            return $this->response->setJSON($retorno);
+        }
+
+        //Retornamos os erros de validação
+        $retorno['erro'] = 'Por favor verifique os erros abaixo e tente novamente';
+        $retorno['erros_model'] = $this->usuarioModel->errors();
+
+        return $this->response->setJSON($retorno);
+
     }
 
 

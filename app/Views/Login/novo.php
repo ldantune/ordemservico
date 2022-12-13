@@ -52,6 +52,12 @@
                             <div class="content">
                                 <?php echo form_open('/', ['id' => 'form', 'class' => 'form-validate']); ?>
 
+                                <div id="response">
+
+                                </div>
+
+                                <?php echo $this->include('Layout/_mensagens'); ?>
+
                                 <div class="form-group">
                                     <input id="login-username" type="text" name="email" required data-msg="Por favor informe seu e-mail" class="input-material">
                                     <label for="login-username" class="label-material">E-mail</label>
@@ -60,7 +66,7 @@
                                     <input id="login-password" type="password" name="password" required data-msg="Por fazor informe sua senha" class="input-material">
                                     <label for="login-password" class="label-material">Senha</label>
                                 </div>
-                                <input type="submit" id="btn-login" class="btn btn-primary " value="Login">
+                                <input type="submit" id="btn-login" class="btn btn-primary " value="Entrar">
                                 <!-- This should be submit button but I replaced it with <a> for demo purposes-->
 
                                 <?php echo form_close(); ?>
@@ -73,7 +79,7 @@
             </div>
         </div>
         <div class="copyrights text-center">
-            <p>2018 &copy; Your company. Download From <a target="_blank" href="https://templateshub.net">Templates Hub</a>.</p>
+            <p>2022 &copy; Your company. Download From <a target="_blank" href="https://templateshub.net">Templates Hub</a>.</p>
         </div>
     </div>
     <!-- JavaScript files-->
@@ -85,6 +91,59 @@
     <script src="<?php echo site_url('recursos/'); ?>vendor/jquery-validation/jquery.validate.min.js"></script>
     <script src="<?php echo site_url('recursos/'); ?>js/front.js"></script>
     <script src="<?php echo site_url('recursos/'); ?>vendor/chart.js/Chart.min.js"></script>
+
+    <script>
+        $(document).ready(function() {
+
+            $("#form").on('submit', function(e) {
+                e.preventDefault();
+                $.ajax({
+                    type: 'POST',
+                    url: '<?php echo site_url('login/criar'); ?>',
+                    data: new FormData(this),
+                    dataType: 'json',
+                    contentType: false,
+                    cache: false,
+                    processData: false,
+                    beforeSend: function() {
+                        $("#response").html('');
+                        $("#btn-login").val('Por favor aguarde...');
+                    },
+                    success: function(response) {
+
+                        $("#btn-login").val('Entrar');
+                        $("#btn-login").removeAttr("disabled");
+                        $('[name=csrf_ordem]').val(response.token);
+
+                        if (!response.erro) {
+
+                            window.location.href = "<?php echo site_url(); ?>" + response.redirect;
+                        }
+
+                        if (response.erro) {
+
+                            $("#response").html('<div class="alert alert-danger" role="alert">' + response.erro + '</div>');
+
+                            if (response.erros_model) {
+                                $.each(response.erros_model, function(key, value) {
+                                    $("#response").append('<ul class="list-unstyled"><li class="text-danger">' + value + '</li></ul>');
+                                });
+                            }
+                        }
+                    },
+                    error: function() {
+                        alert('Não foi possível processar a solicitação. Por favor entre em contato com suporte técnico.');
+                        $("#btn-login").val('Entrar');
+                        $("#btn-login").removeAttr("disabled");
+                    }
+                });
+            });
+
+            $("#form").submit(function() {
+                $(this).find(":submit").attr('disabled', 'disabled');
+            })
+        });
+    </script>
 
 
 </body>

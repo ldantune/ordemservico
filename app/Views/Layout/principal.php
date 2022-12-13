@@ -178,7 +178,9 @@
             <div aria-labelledby="languages" class="dropdown-menu"><a rel="nofollow" href="#" class="dropdown-item"> <img src="img/flags/16/DE.png" alt="English" class="mr-2"><span>German</span></a><a rel="nofollow" href="#" class="dropdown-item"> <img src="img/flags/16/FR.png" alt="English" class="mr-2"><span>French </span></a></div>
           </div>
           <!-- Log out               -->
-          <div class="list-inline-item logout"> <a id="logout" href="login.html" class="nav-link">Logout <i class="icon-logout"></i></a></div>
+          <div class="list-inline-item logout">
+            <a id="logout" href="<?php echo site_url('logout'); ?>" class="nav-link">Sair <i class="icon-logout"></i></a>
+          </div>
         </div>
       </div>
     </nav>
@@ -190,33 +192,13 @@
       <div class="sidebar-header d-flex align-items-center">
         <div class="avatar"><img src="img/avatar-6.jpg" alt="..." class="img-fluid rounded-circle"></div>
         <div class="title">
-          <h1 class="h5">Mark Stephen</h1>
+          <h1 class="h5"><?php echo usuario_logado()->nome;?></h1>
           <p>Web Designer</p>
         </div>
       </div>
-      <!-- Sidebar Navidation Menus--><span class="heading">Main</span>
-      <ul class="list-unstyled">
-
-        <li class="<?php echo (url_is('/') ? 'active' : '') ?>"><a href="<?php echo site_url('/') ?>"> <i class="icon-home"></i>Home </a></li>
-
-        <li class="<?php echo (url_is('usuarios*') ? 'active' : '') ?>"><a href="<?php echo site_url('usuarios') ?>"> <i class="icon-user"></i>Usuários </a></li>
-        <li class="<?php echo (url_is('grupos*') ? 'active' : '') ?>"><a href="<?php echo site_url('grupos') ?>"> <i class="icon-settings"></i>Grupos & Permissões </a></li>
-        <li><a href="charts.html"> <i class="fa fa-bar-chart"></i>Charts </a></li>
-        <li><a href="forms.html"> <i class="icon-padnote"></i>Forms </a></li>
-        <li><a href="#exampledropdownDropdown" aria-expanded="false" data-toggle="collapse"> <i class="icon-windows"></i>Example dropdown </a>
-          <ul id="exampledropdownDropdown" class="collapse list-unstyled ">
-            <li><a href="#">Page</a></li>
-            <li><a href="#">Page</a></li>
-            <li><a href="#">Page</a></li>
-          </ul>
-        </li>
-        <li><a href="login.html"> <i class="icon-logout"></i>Login page </a></li>
-      </ul><span class="heading">Extras</span>
-      <ul class="list-unstyled">
-        <li> <a href="#"> <i class="icon-settings"></i>Demo </a></li>
-        <li> <a href="#"> <i class="icon-writing-whiteboard"></i>Demo </a></li>
-        <li> <a href="#"> <i class="icon-chart"></i>Demo </a></li>
-      </ul>
+      <!-- Menus --->
+      
+      <?php echo $this->include('Layout/_menu'); ?>
     </nav>
     <!-- Sidebar Navigation end-->
     <div class="page-content">
