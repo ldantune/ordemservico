@@ -12,7 +12,8 @@ class Usuario extends Entity
         'deletado_em'
     ];
 
-    public function exibeSituacao(){
+    public function exibeSituacao()
+    {
 
         if($this->deletado_em != null){
 
@@ -32,6 +33,28 @@ class Usuario extends Entity
         }
 
 
+    }
+
+    public function verificaPassword(string $password):bool
+    {
+        return password_verify($password, $this->password_hash);
+    }
+
+    public function temPermissaoPara(string $permissao) : bool 
+    {
+        if($this->is_admin == true){
+            return true;
+        }
+
+        if(empty($this->permissoes)){
+            return false;
+        }
+
+        if(in_array($permissao, $this->permissoes) == false){
+            return false;
+        }
+
+        return true;
     }
 
 }

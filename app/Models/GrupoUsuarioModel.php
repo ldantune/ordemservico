@@ -28,4 +28,11 @@ class GrupoUsuarioModel extends Model
                     ->paginate($quantidade_paginacao);
 
     }
+
+    //Método que recupera o grupo ao qual o usuário fazr parte
+    public function usuarioEstaNoGrupo(int $grupo_id, int $usuario_id){
+        return $this->where('grupo_id', $grupo_id)
+                    ->where('usuario_id', $usuario_id)
+                    ->first();
+    }
 }

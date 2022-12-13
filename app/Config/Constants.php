@@ -92,3 +92,9 @@ define('EVENT_PRIORITY_NORMAL', 100);
  * @deprecated Use \CodeIgniter\Events\Events::PRIORITY_HIGH instead.
  */
 define('EVENT_PRIORITY_HIGH', 10);
+
+/**
+ * GrupoAdmin no banco = 1;
+ */
+define('GRUPOADMIN', 1);
+define('GRUPOCLIENTE', 2);
