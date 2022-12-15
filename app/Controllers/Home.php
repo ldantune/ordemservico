@@ -3,9 +3,12 @@
 namespace App\Controllers;
 
 use App\Libraries\Autenticacao;
+use App\Traits\ValidacoesTrait;
 
 class Home extends BaseController
 {
+    use ValidacoesTrait;
+
     public function index()
     {
 
@@ -47,5 +50,10 @@ class Home extends BaseController
             $email->printDebugger();
         }
         
+    }
+
+    public function cep(){
+        $cep = "38025-370";
+        return $this->response->setJSON($this->consultaViaCep($cep));
     }
 }

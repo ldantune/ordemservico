@@ -48,6 +48,56 @@
 <script>
   $(document).ready(function() {
 
+    $('[name=cep]').on('keyup', function() {
+      var cep = $(this).val();
+
+      if (cep.length === 9) {
+        $.ajax({
+          type: 'GET',
+          url: '<?php echo site_url('fornecedores/consultacep'); ?>',
+          data: {
+            cep: cep
+          },
+          dataType: 'json',
+          beforeSend: function() {
+
+            $("#form").LoadingOverlay("show");
+            $("#cep").html('');
+
+          },
+          success: function(response) {
+            $("#form").LoadingOverlay("hide", true);
+            
+            if (!response.erro) {
+              if(!response.endereco){
+                $('[name=endereco]').prop('readonly', false);
+                $('[name=endereco]').focus();
+              }
+
+              if(!response.bairro){
+                $('[name=bairro]').prop('readonly', false);
+              }
+
+              $('[name=endereco]').val(response.endereco);
+              $('[name=bairro]').val(response.bairro);
+              $('[name=estado]').val(response.estado);
+              $('[name=cidade]').val(response.cidade);
+
+            }
+
+            if (response.erro) {
+              $("#cep").html(response.erro);
+              
+            }
+          },
+          error: function() {
+            alert('Não foi possível processar a solicitação. Por favor entre em contato com suporte técnico.');
+            $("#form").LoadingOverlay("hide", true);
+          }
+        });
+      }
+    });
+
     // $("#form").LoadingOverlay("show");
     $("#form").on('submit', function(e) {
       e.preventDefault();
@@ -71,17 +121,17 @@
 
           if (!response.erro) {
             if (response.info) {
-              $("#response").html('<div class="alert alert-info" role="alert">'+ response.info +'</div>');
-            }else{
+              $("#response").html('<div class="alert alert-info" role="alert">' + response.info + '</div>');
+            } else {
               window.location.href = "<?php echo site_url("fornecedores/exibir/$fornecedor->id"); ?>";
             }
-          } 
+          }
 
-          if(response.erro){
-            $("#response").html('<div class="alert alert-danger" role="alert">'+ response.erro +'</div>');
-            if(response.erros_model){
-              $.each(response.erros_model, function(key, value){
-                $("#response").append('<ul class="list-unstyled"><li class="text-danger">'+value+'</li></ul>');
+          if (response.erro) {
+            $("#response").html('<div class="alert alert-danger" role="alert">' + response.erro + '</div>');
+            if (response.erros_model) {
+              $.each(response.erros_model, function(key, value) {
+                $("#response").append('<ul class="list-unstyled"><li class="text-danger">' + value + '</li></ul>');
               });
             }
           }
@@ -94,7 +144,7 @@
       });
     });
 
-    $("#form").submit(function(){
+    $("#form").submit(function() {
       $(this).find(":submit").attr('disabled', 'disabled');
     })
   });
