@@ -89,6 +89,7 @@
                     "data": "ativo"
                 }
             ],
+            "order":[],
             "deferRender": true,
             "processing": true,
             "language": {
