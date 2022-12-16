@@ -9,7 +9,6 @@ class FornecedorModel extends Model
     protected $table            = 'fornecedores';
     protected $returnType       = 'App\Entities\Fornecedor';
     protected $useSoftDeletes   = true;
-    protected $protectFields    = true;
     protected $allowedFields    = [
         'razao',
         'nome_fantasia',
