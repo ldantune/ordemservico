@@ -54,6 +54,10 @@ abstract class BaseController extends Controller
     {
         $path = WRITEPATH . "uploads/$destino/$arquivo";
 
+        if(is_file($path) === false){
+            throw \CodeIgniter\Exceptions\PageNotFoundException::forPageNotFound("Não encontramos o arquivo $arquivo");
+        }
+
         $fileInfo = new \finfo(FILEINFO_MIME);
 
         $fileType = $fileInfo->file($path);
