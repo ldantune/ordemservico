@@ -56,4 +56,9 @@ class Home extends BaseController
         $cep = "38025-370";
         return $this->response->setJSON($this->consultaViaCep($cep));
     }
+
+    public function barcode(){
+        $generator = new \Picqer\Barcode\BarcodeGeneratorSVG();
+        echo $generator->getBarcode('081231723897', $generator::TYPE_CODE_128);
+    }
 }
