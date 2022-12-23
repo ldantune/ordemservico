@@ -78,7 +78,7 @@
         </div>
       <?php else : ?>
 
-        <div class="accordion" id="accordionExample">
+        <div class="accordion" id="accordionExample" style="height: 650px; overflow: auto;">
 
           <?php foreach ($item->historico as $key => $historico) : ?>
 
@@ -86,12 +86,15 @@
               <div class="card-header" id="heading-<?php echo $key; ?>">
                 <h2 class="mb-0">
                   <button class="btn btn-link btn-block text-left" type="button" data-toggle="collapse" data-target="#collapse-<?php echo $key; ?>" aria-expanded="true" aria-controls="collapse-<?php echo $key; ?>">
-                    <p>Em: <?php echo date('d/m/Y H:i', strtotime($historico['criado_em'])); ?></p>
+                    <p>Em: <?php echo date('d/m/Y H:i', strtotime($historico['criado_em'])); ?> - 
+                      <span class="text-white">O item sofreu uma <?php echo esc($historico['acao']); ?></span><br>
+                      Pelo usuário <span class="text-white"><?php echo esc($historico['usuario']); ?></span>
+                    </p>
                   </button>
                 </h2>
               </div>
 
-              <div id="collapse-<?php echo $key; ?>" class="collapse <?php echo($key === 0 ? 'show' : '') ?>" aria-labelledby="heading-<?php echo $key; ?>" data-parent="#accordionExample">
+              <div id="collapse-<?php echo $key; ?>" class="collapse <?php echo ($key === 0 ? 'show' : '') ?>" aria-labelledby="heading-<?php echo $key; ?>" data-parent="#accordionExample">
                 <div class="card-body">
                   <?php foreach ($historico['atributos_alterados'] as $evento) : ?>
                     <p><?php echo $evento ?></p>
