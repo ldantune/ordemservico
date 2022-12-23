@@ -8,10 +8,12 @@ use App\Entities\Item;
 class Itens extends BaseController
 {
     private $itemModel;
+    private $itemHistoricoModel;
 
     public function __construct()
     {
         $this->itemModel = new \App\Models\ItemModel();
+        $this->itemHistoricoModel = new \App\Models\ItemHistoricoModel();
     }
 
     public function index()
@@ -68,7 +70,7 @@ class Itens extends BaseController
     {
         $item  = $this->buscaItemOu404($id);
 
-
+        $this->defineHistoricoItem($item);
 
         $data = [
             'titulo' => "Detalhando o item " . esc($item->nome),
@@ -160,9 +162,9 @@ class Itens extends BaseController
             }
         }
 
-
-
         if ($this->itemModel->save($item)) {
+
+            $this->insereHistoricoItem($item, 'Atualização');
 
             session()->setFlashdata('sucesso', 'Dados salvos com sucesso!');
             return $this->response->setJSON($retorno);
@@ -247,5 +249,42 @@ class Itens extends BaseController
         }
 
         return $item;
+    }
+
+    private function defineHistoricoItem(object $item) : object{
+        $atribustos = [
+            'atributos_alterados',
+            'criado_em',
+            'acao',
+        ];
+
+        $historico = $this->itemHistoricoModel
+                            ->asArray()
+                            ->select($atribustos)
+                            ->where('item_id', $item->id)
+                            ->orderBy('criado_em', 'DESC')
+                            ->findAll();
+
+        if($historico != null){
+            foreach($historico as $key => $hist){
+                $historico[$key]['atributos_alterados'] = unserialize($hist['atributos_alterados']);
+            }
+
+            $item->historico = $historico;
+        }
+
+        return $item;
+    }
+
+    private function insereHistoricoItem(object $item, string $acao) : void{
+        $historico = [
+            'usuario_id' =>usuario_logado()->id,
+            'item_id' =>$item->id,
+            'acao' => $acao,
+            'criado_em' => date('Y-m-d H:i:s'),
+            'atributos_alterados' => $item->recuperaAtribustosAlteradoes()
+        ];
+
+        $this->itemHistoricoModel->insert($historico);
     }
 }

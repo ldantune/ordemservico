@@ -12,7 +12,7 @@
 
 <?php echo $this->section('conteudo') ?>
 <div class="row">
-  <div class="col-lg-3">
+  <div class="col-lg-4">
     <div class="user-block block">
 
 
@@ -63,6 +63,57 @@
 
       <a href="<?php echo site_url("itens"); ?>" class="btn btn-secondary ml-2">Voltar</a>
     </div> <!-- ./block -->
+  </div>
+
+  <div class="col-lg-8">
+
+    <div class="user-block block">
+      <div class="text-center">
+        <h1 class="">Histórico de alterações do item</h1>
+      </div>
+
+      <?php if (isset($item->historico) === false) : ?>
+        <div class="text-center">
+          <p class="contributions">Item não possui histórico de alterações</p>
+        </div>
+      <?php else : ?>
+
+        <div class="accordion" id="accordionExample">
+
+          <?php foreach ($item->historico as $key => $historico) : ?>
+
+            <div class="card">
+              <div class="card-header" id="heading-<?php echo $key; ?>">
+                <h2 class="mb-0">
+                  <button class="btn btn-link btn-block text-left" type="button" data-toggle="collapse" data-target="#collapse-<?php echo $key; ?>" aria-expanded="true" aria-controls="collapse-<?php echo $key; ?>">
+                    <p>Em: <?php echo date('d/m/Y H:i', strtotime($historico['criado_em'])); ?></p>
+                  </button>
+                </h2>
+              </div>
+
+              <div id="collapse-<?php echo $key; ?>" class="collapse <?php echo($key === 0 ? 'show' : '') ?>" aria-labelledby="heading-<?php echo $key; ?>" data-parent="#accordionExample">
+                <div class="card-body">
+                  <?php foreach ($historico['atributos_alterados'] as $evento) : ?>
+                    <p><?php echo $evento ?></p>
+
+
+                  <?php endforeach; ?>
+                </div>
+              </div>
+            </div>
+
+          <?php endforeach; ?>
+
+        </div>
+
+
+
+
+
+      <?php endif; ?>
+    </div>
+
+
   </div>
 </div>
 <?php echo $this->endSection() ?>
