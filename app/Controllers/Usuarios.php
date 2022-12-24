@@ -217,7 +217,7 @@ class Usuarios extends BaseController
         $validacao = service('validation');
 
         $regras = [
-            'imagem' => 'uploaded[imagem]|max_size[imagem,1024]|ext_in[imagem,png,jpg,jpeg,webp]',
+            'imagem' => 'uploaded[imagem]|max_size[imagem,6144]|ext_in[imagem,png,jpg,jpeg,webp]',
         ];
 
         $mensagens = [   // Errors
@@ -449,7 +449,7 @@ class Usuarios extends BaseController
 
             $grupoUsuario = $this->buscaGrupoUsuarioOu404($principal_id);
 
-            if ($grupoUsuario->grupo_id == 2) {
+            if ($grupoUsuario->grupo_id == getenv('GRUPO_CLIENTE')) {
                 return redirect()->to(site_url("usuarios/exibir/$grupoUsuario->usuario_id"))->with("info", "Não é permitida a exclusão do usuário do grupo de Clientes");
             }
 
