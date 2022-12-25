@@ -43,18 +43,35 @@ class Usuarios extends BaseController
         ];
 
         $usuarios = $this->usuarioModel->select($atributos)
+            ->asArray()
             ->withDeleted(true)
             ->orderBy('id', 'DESC')
             ->findAll();
 
+        $gruposUsuarios = $this->grupoUsuarioModel->recuperaGrupos();
+
+
+        foreach($usuarios as $key => $usuario) {
+
+            foreach($gruposUsuarios as $grupo) {
+
+                if($usuario['id'] === $grupo['usuario_id']){
+                    $usuarios[$key]['grupos'][] = $grupo['nome'];
+                }
+
+            }
+        }
+
+
+
         $data = [];
         foreach ($usuarios as $usuario) {
 
-            if ($usuario->imagem != null) {
+            if ($usuario['imagem'] != null) {
                 $imagem = [
-                    'src' => site_url("usuarios/imagem/$usuario->imagem"),
+                    'src' => site_url("usuarios/imagem/" .$usuario['imagem']),
                     'class' => 'rounded-circle img-fluid',
-                    'alt' => esc($usuario->nome),
+                    'alt' => esc($usuario['nome']),
                     'width' => '50'
                 ];
             } else {
@@ -66,12 +83,18 @@ class Usuarios extends BaseController
                 ];
             }
 
+            if(isset($usuario['grupos']) === false){
+                $usuario['grupos'] = ['<span class="text-warning">Sem grupos de acesso</span>'];
+            }
+
+            $usuario = new Usuario($usuario);
+
             $data[] = [
                 'imagem' => $usuario->imagem = img($imagem),
-                'nome' => anchor("usuarios/exibir/$usuario->id", esc($usuario->nome), 'title="Exibir usuário ' . esc($usuario->nome) . '"'),
+                'nome' => anchor("usuarios/exibir/".$usuario->id, esc($usuario->nome), 'title="Exibir usuário ' . esc($usuario->nome) . '"'),
                 'email' => $usuario->email,
+                'grupos' => $usuario->grupos,
                 'ativo' => $usuario->exibeSituacao(),
-
             ];
         }
 
