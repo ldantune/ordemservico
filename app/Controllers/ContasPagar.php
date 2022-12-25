@@ -1,0 +1,213 @@
+<?php
+
+namespace App\Controllers;
+
+use App\Controllers\BaseController;
+use App\Entities\ContaPagar;
+
+class ContasPagar extends BaseController
+{
+
+    private $contaPagarModel;
+    private $fornecedorModel;
+
+    public function __construct()
+    {
+        $this->contaPagarModel = new \App\Models\ContaPagarModel();
+        $this->fornecedorModel = new \App\Models\FornecedorModel();
+    }
+
+    public function index()
+    {
+        $data = [
+            'titulo' => 'Listando as contas',
+        ];
+
+        return view('ContasPagar/index', $data);
+    }
+
+    public function recuperaContas()
+    {
+        if (!$this->request->isAJAX()) {
+            return redirect()->back();
+        }
+
+
+
+        $contas = $this->contaPagarModel->recuperaContasPagar();
+
+        $data = [];
+        foreach ($contas as $conta) {
+            $data[] = [
+                'razao' => anchor("contas/exibir/$conta->id", esc($conta->razao . ' - CNPJ ' . $conta->cnpj), 'title="Exibir conta ' . esc($conta->razao) . '"'),
+                'valor_conta' => 'R$ ' . esc(number_format($conta->valor_conta, 2)),
+                'data_vencimento' => $conta->data_vencimento,
+                'situacao' => $conta->exibeSituacao(),
+            ];
+        }
+
+        $retorno = [
+            'data' => $data
+        ];
+
+        return $this->response->setJSON($retorno);
+    }
+
+    public function exibir(int $id)
+    {
+        $conta = $this->contaPagarModel->buscaContaOu404($id);
+
+        $data = [
+            'titulo' => "Detalhando a conta do fornecedor $conta->razao",
+            'conta' => $conta
+        ];
+
+        return view('ContasPagar/exibir', $data);
+    }
+
+    public function criar()
+    {
+        $conta = new ContaPagar();
+
+        $data = [
+            'titulo' => "Criando nova conta de fornecedor",
+            'conta' => $conta
+        ];
+
+        return view('ContasPagar/criar', $data);
+    }
+
+    public function cadastrar()
+    {
+
+        if (!$this->request->isAJAX()) {
+            return redirect()->back();
+        }
+
+        // Envio o hash do token do form
+        $retorno['token'] = csrf_hash();
+
+        // Recupero o post da requisição
+        $post = $this->request->getPost();
+
+
+        $conta = new ContaPagar($post);
+
+        $conta->valor_conta = str_replace(",", "", $conta->valor_conta);
+
+        if ($this->contaPagarModel->save($conta)) {
+
+            session()->setFlashdata('sucesso', 'Dados salvos com sucesso! <br> <a class="btn btn-danger mt-2" href=' . site_url('contas/criar') . '>Criar nova conta</a>');
+
+            $retorno['id'] = $this->contaPagarModel->getInsertID();
+
+            return $this->response->setJSON($retorno);
+        }
+
+
+        //Retornamos os erros de validação
+        $retorno['erro'] = 'Por favor verifique os erros abaixo e tente novamente';
+        $retorno['erros_model'] = $this->contaPagarModel->errors();
+
+        return $this->response->setJSON($retorno);
+    }
+
+    public function buscaFornecedores()
+    {
+
+        if (!$this->request->isAJAX()) {
+            return redirect()->back();
+        }
+
+        $atributos = [
+            'id',
+            'CONCAT(razao, " CNPJ ", cnpj) AS razao',
+            'cnpj'
+        ];
+
+        $termo = $this->request->getGet('termo');
+
+        $fornecedores = $this->fornecedorModel
+            ->select($atributos)
+            ->asArray()
+            ->like('razao', $termo)
+            ->orLike('cnpj', $termo)
+            ->where('ativo', true)
+            ->orderBy('razao', 'ASC')
+            ->findAll();
+
+        return $this->response->setJSON($fornecedores);
+    }
+
+    public function editar(int $id)
+    {
+        $conta = $this->contaPagarModel->buscaContaOu404($id);
+
+        $data = [
+            'titulo' => "Editando a conta do fornecedor $conta->razao",
+            'conta' => $conta
+        ];
+
+        return view('ContasPagar/editar', $data);
+    }
+
+    public function atualizar()
+    {
+
+        if (!$this->request->isAJAX()) {
+            return redirect()->back();
+        }
+
+        // Envio o hash do token do form
+        $retorno['token'] = csrf_hash();
+
+        // Recupero o post da requisição
+        $post = $this->request->getPost();
+
+        $conta = $this->contaPagarModel->buscaContaOu404($post['id']);
+
+        $conta->fill($post);
+
+        $conta->valor_conta = str_replace(",", "", $conta->valor_conta);
+
+        if ($conta->hasChanged() === false) {
+            $retorno['info'] = 'Não há dados para ser atualizado.';
+            return $this->response->setJSON($retorno);
+        }
+
+
+        if ($this->contaPagarModel->save($conta)) {
+
+            session()->setFlashdata('sucesso', 'Dados salvos com sucesso!');
+            return $this->response->setJSON($retorno);
+        }
+
+
+        //Retornamos os erros de validação
+        $retorno['erro'] = 'Por favor verifique os erros abaixo e tente novamente';
+        $retorno['erros_model'] = $this->contaPagarModel->errors();
+
+        return $this->response->setJSON($retorno);
+    }
+
+    public function excluir(int $id = null)
+    {
+
+        $conta = $this->contaPagarModel->buscaContaOu404($id);
+
+        if ($this->request->getMethod() === 'post') {
+
+            $this->contaPagarModel->delete($conta->id);
+
+            return redirect()->to(site_url("contas"))->with('sucesso', "Conta do fornecedor $conta->razao excluída com sucesso!");
+        }
+
+        $data = [
+            'titulo' => "Excluindo a conta do fornecedor" . esc($conta->razao),
+            'conta' => $conta
+        ];
+
+
+        return view('ContasPagar/excluir', $data);
+    }
+}

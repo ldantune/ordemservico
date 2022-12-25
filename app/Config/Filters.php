@@ -79,6 +79,8 @@ class Filters extends BaseConfig
                 'grupos(/*)?',
                 'fornecedores(/*)?',
                 'itens(/*)?',
+                'clientes(/*)?',
+                'contaspagar(/*)?',
             ]
         ],
         'visitante' => [

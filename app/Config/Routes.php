@@ -40,6 +40,24 @@ $routes->get('login', 'Login::novo');
 $routes->get('logout', 'Login::logout');
 $routes->get('esqueci', 'Password::esqueci');
 
+
+$routes->group('contas', function($routes) {
+
+    $routes->add('/', 'ContasPagar::index');
+    $routes->add('recuperacontas', 'ContasPagar::recuperaContas');
+    $routes->add('buscaFornecedores', 'ContasPagar::buscaFornecedores');
+    $routes->add('exibir/(:segment)', 'ContasPagar::exibir/$1');
+    $routes->add('criar', 'ContasPagar::criar');
+    $routes->add('editar/(:segment)', 'ContasPagar::editar/$1');
+
+    //Aqui é POST
+    $routes->post('cadastrar', 'ContasPagar::cadastrar');
+    $routes->post('atualizar', 'ContasPagar::atualizar');
+
+    //Aqui é GET e POST
+    $routes->match(['get','post'], 'excluir/(:segment)', 'ContasPagar::excluir/$1');
+});
+
 /*
  * --------------------------------------------------------------------
  * Additional Routing

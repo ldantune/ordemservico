@@ -15,7 +15,7 @@ class FornecedorFakerSeeder extends Seeder
         $faker->addProvider(new \Faker\Provider\pt_BR\Company($faker));
         $faker->addProvider(new \Faker\Provider\pt_BR\PhoneNumber($faker));
 
-        $criarQuantosFornecedores = 5000;
+        $criarQuantosFornecedores = 1000;
 
         $fornecedorPush = [];
 
