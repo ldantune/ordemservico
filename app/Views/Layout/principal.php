@@ -125,8 +125,16 @@
   <script src="<?php echo site_url('recursos/'); ?>vendor/bootstrap/js/bootstrap.min.js"></script>
   <script src="<?php echo site_url('recursos/'); ?>js/front.js"></script>
 
+
   <!-- -->
   <?php echo $this->renderSection('scripts'); ?>
+
+  <?php if (url_is('eventos*')) : ?>
+    <script src="<?php echo site_url('recursos/'); ?>vendor/fullcalendar/fullcalendar.min.js"></script>
+  <?php endif; ?>
+  <script src="<?php echo site_url('recursos/'); ?>vendor/fullcalendar/toastr.min.js"></script>
+  <script src="<?php echo site_url('recursos/'); ?>vendor/fullcalendar/moment.min.js"></script>
+
 
   <script>
     $(function() {
@@ -134,6 +142,15 @@
         html: true
       })
     })
+
+
+    function exibeMensagemAtencao(mensagem, tipo) {
+      toastr.warning(mensagem, tipo);
+    }
+
+    function exibeMensagemSucesso(mensagem, tipo) {
+      toastr.success(mensagem, tipo);
+    }
   </script>
 </body>
 
