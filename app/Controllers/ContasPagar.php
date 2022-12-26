@@ -10,11 +10,13 @@ class ContasPagar extends BaseController
 
     private $contaPagarModel;
     private $fornecedorModel;
+    private $eventoModel;
 
     public function __construct()
     {
         $this->contaPagarModel = new \App\Models\ContaPagarModel();
         $this->fornecedorModel = new \App\Models\FornecedorModel();
+        $this->eventoModel = new \App\Models\EventoModel();
     }
 
     public function index()
@@ -95,7 +97,13 @@ class ContasPagar extends BaseController
 
         $conta->valor_conta = str_replace(",", "", $conta->valor_conta);
 
+
+
         if ($this->contaPagarModel->save($conta)) {
+
+            if ($conta->situacao == 0) {
+                $this->cadastraEventoDaConta($conta);
+            }
 
             session()->setFlashdata('sucesso', 'Dados salvos com sucesso! <br> <a class="btn btn-danger mt-2" href=' . site_url('contas/criar') . '>Criar nova conta</a>');
 
@@ -168,16 +176,26 @@ class ContasPagar extends BaseController
 
         $conta->fill($post);
 
-        $conta->valor_conta = str_replace(",", "", $conta->valor_conta);
-
         if ($conta->hasChanged() === false) {
             $retorno['info'] = 'Não há dados para ser atualizado.';
             return $this->response->setJSON($retorno);
         }
 
+        $conta->valor_conta = str_replace(",", "", $conta->valor_conta);
+
+        
+
+        
 
         if ($this->contaPagarModel->save($conta)) {
 
+            if($conta->hasChanged('data_vencimento') && $conta->situacao == 0){
+
+                $dias = $conta->defineDataVencimentoEvento();
+    
+                $this->eventoModel->atualizaEvento('conta_id', $conta->id, $dias);
+            }
+            
             session()->setFlashdata('sucesso', 'Dados salvos com sucesso!');
             return $this->response->setJSON($retorno);
         }
@@ -209,5 +227,23 @@ class ContasPagar extends BaseController
 
 
         return view('ContasPagar/excluir', $data);
+    }
+
+    private function cadastraEventoDaConta(object $conta) : void
+    {
+        $fornecedor = $this->fornecedorModel->select('razao, cnpj')->find($conta->fornecedor_id);
+
+        $razao = esc($fornecedor->razao);
+        $cnpj = esc($fornecedor->cnpj);
+
+        $valorConta = 'R$&nbsp;' . esc(number_format($conta->valor_conta, 2));
+
+        $tituloEvento = "Conta do fornecedor $razao - CNPJ: $cnpj | Valor $valorConta";
+
+        $dias = $conta->defineDataVencimentoEvento();
+
+        $contaId = $this->contaPagarModel->getInsertID();
+
+        $this->eventoModel->cadastraEvento('conta_id', $tituloEvento, $contaId, $dias);
     }
 }

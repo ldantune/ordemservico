@@ -27,4 +27,11 @@ class ContaPagar extends Entity
             return '<i class="fa fa-exclamation-triangle text-danger"></i>&nbsp; Conta venceu em ' .date('d/m/Y', strtotime($this->data_vencimento));
         }
     }
+
+    public function defineDataVencimentoEvento() : int {
+
+        $dataAtualCovertida = $this->mutateDate(date('Y-m-d'));
+
+        return $dataAtualCovertida->difference($this->data_vencimento)->getDays();
+    }
 }
