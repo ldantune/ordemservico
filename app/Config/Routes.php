@@ -58,6 +58,13 @@ $routes->group('contas', function($routes) {
     $routes->match(['get','post'], 'excluir/(:segment)', 'ContasPagar::excluir/$1');
 });
 
+$routes->group('formas', function($routes) {
+
+    $routes->add('/', 'FormasPagamentos::index');
+    $routes->add('recuperaformas', 'FormasPagamentos::recuperaFormas');
+    
+});
+
 /*
  * --------------------------------------------------------------------
  * Additional Routing
