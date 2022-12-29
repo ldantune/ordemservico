@@ -83,6 +83,7 @@ class Filters extends BaseConfig
                 'contas(/*)?',
                 'eventos(/*)?',
                 'formas(/*)?',
+                'ordens(/*)?',
             ]
         ],
         'visitante' => [
