@@ -2,8 +2,6 @@
 
 namespace App\Traits;
 
-use PhpParser\Node\Expr\FuncCall;
-
 trait ValidacoesTrait
 {
   public function consultaViaCep(string $cep): array

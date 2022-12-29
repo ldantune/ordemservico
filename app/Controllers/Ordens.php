@@ -5,9 +5,12 @@ namespace App\Controllers;
 use App\Controllers\BaseController;
 
 use App\Entities\Ordem;
+use App\Traits\OrdemTrait;
 
 class Ordens extends BaseController
 {
+    use OrdemTrait;
+    
     private $ordemModel;
 
     public function __construct()
