@@ -49,20 +49,55 @@ class OrdemModel extends Model
         ],
     ];
 
-    public function geraCodigoInternoOrdem() : string{
-        do{
+    public function buscaOrdemOu404(string $codigo = null)
+    {
 
-            $codigo = random_string('alnum', 20);
-            
-            $this->select('codigo')->where('codigo', $codigo);
+        if ($codigo === null) {
 
-        }while($this->countAllResults() > 1);
+            throw \CodeIgniter\Exceptions\PageNotFoundException::forPageNotFound("Não encontramos a ordem $codigo");
+        }
 
-        return $codigo;
+        $atributos = [
+            'ordens.*',
+            'u_aber.id AS usuario_abertura_id',
+            'u_aber.nome AS usuario_abertura',
+
+            'u_resp.id AS usuario_responsavel_id',
+            'u_resp.nome AS usuario_responsavel',
+
+            'u_ence.id AS usuario_encerramento_id',
+            'u_ence.nome AS usuario_encerramento',
+
+            'clientes.usuario_id AS cliente_usuario_id',
+            'clientes.nome',
+            'clientes.cpf',
+            'clientes.telefone',
+            'clientes.email',
+        ];
+
+        $ordem = $this->select($atributos)
+            ->join('ordens_responsaveis', 'ordens_responsaveis.ordem_id = ordens.id')
+            ->join('clientes', 'clientes.id = ordens.cliente_id')
+            ->join('usuarios AS u_cliente', 'u_cliente.id = clientes.usuario_id')
+            ->join('usuarios AS u_aber', 'u_aber.id = ordens_responsaveis.usuario_abertura_id')
+            ->join('usuarios AS u_resp', 'u_resp.id = ordens_responsaveis.usuario_responsavel_id', 'LEFT')
+            ->join('usuarios AS u_ence', 'u_ence.id = ordens_responsaveis.usuario_encerramento_id', 'LEFT')
+            ->where('ordens.codigo', $codigo)
+            ->withDeleted(true)
+            ->first();
+
+
+        if ($ordem === null) {
+
+            throw \CodeIgniter\Exceptions\PageNotFoundException::forPageNotFound("Não encontramos a ordem $codigo");
+        }
+
+        return $ordem;
     }
 
-    public function recuperaOrdens(){
-        
+    public function recuperaOrdens()
+    {
+
         $atributos = [
             'ordens.codigo',
             'ordens.criado_em',
@@ -72,9 +107,21 @@ class OrdemModel extends Model
         ];
 
         return $this->select($atributos)
-                    ->join('clientes', 'clientes.id = ordens.cliente_id')
-                    ->orderBy('ordens.situacao', 'ASC')
-                    ->withDeleted(true)
-                    ->findAll();
+            ->join('clientes', 'clientes.id = ordens.cliente_id')
+            ->orderBy('ordens.situacao', 'ASC')
+            ->withDeleted(true)
+            ->findAll();
+    }
+
+    public function geraCodigoInternoOrdem(): string
+    {
+        do {
+
+            $codigo = random_string('alnum', 20);
+
+            $this->select('codigo')->where('codigo', $codigo);
+        } while ($this->countAllResults() > 1);
+
+        return $codigo;
     }
 }

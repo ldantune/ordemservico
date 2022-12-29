@@ -13,7 +13,7 @@ trait OrdemTrait
 
       $ordemItens = $ordemItemModel->recuperaItensDaOrdem($ordem->id);
 
-      $ordem->itens = ($ordemItens !== null ? $ordemItens : null);
+      $ordem->itens = (!empty($ordemItens) ? $ordemItens : null);
 
       return $ordem;
     }
