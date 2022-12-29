@@ -28,7 +28,7 @@
     <div class="form-group">
       <label class="form-control-label">Escolha o cliente</label>
 
-      <select class="form-control cliente" name="cliente_id" id="">
+      <select class="form-control selectize" name="cliente_id" id="">
 
         <option value="">Digite o nome do cliente ou CPF</option>
 

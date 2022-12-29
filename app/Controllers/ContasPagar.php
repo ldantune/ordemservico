@@ -34,8 +34,6 @@ class ContasPagar extends BaseController
             return redirect()->back();
         }
 
-
-
         $contas = $this->contaPagarModel->recuperaContasPagar();
 
         $data = [];

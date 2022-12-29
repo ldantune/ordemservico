@@ -86,10 +86,9 @@ class OrdemModel extends Model
             ->withDeleted(true)
             ->first();
 
-
         if ($ordem === null) {
 
-            throw \CodeIgniter\Exceptions\PageNotFoundException::forPageNotFound("Não encontramos a ordem $codigo");
+            throw \CodeIgniter\Exceptions\PageNotFoundException::forPageNotFound("Não encontramos a ordem OK $codigo");
         }
 
         return $ordem;
@@ -108,7 +107,7 @@ class OrdemModel extends Model
 
         return $this->select($atributos)
             ->join('clientes', 'clientes.id = ordens.cliente_id')
-            ->orderBy('ordens.situacao', 'ASC')
+            ->orderBy('ordens.criado_em', 'DESC')
             ->withDeleted(true)
             ->findAll();
     }

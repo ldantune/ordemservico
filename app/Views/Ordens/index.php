@@ -93,6 +93,7 @@
                     "data": "situacao"
                 }
             ],
+            "order":[],
             "deferRender": true,
             "processing": true,
             "language": {
