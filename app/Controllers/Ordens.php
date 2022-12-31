@@ -190,6 +190,57 @@ class Ordens extends BaseController
         return $this->response->setJSON($retorno);
     }
 
+    public function excluir(string $codigo = null)
+    {
+
+        $ordem = $this->ordemModel->buscaOrdemOu404($codigo);
+
+        if($ordem->deletado_em != null){
+            return redirect()->back()->with('info', "A ordem de serviço $ordem->codigo já encotra-se excluída");
+        }
+
+        $situacoesPermitidas =[
+            'encerrada',
+            'cancelada'
+        ];
+
+        if(!in_array($ordem->situacao, $situacoesPermitidas)){
+            return redirect()->back()->with('info', "Apenas ordens encerradas ou canceladas podem ser excluídas");
+        }
+
+        if ($this->request->getMethod() === 'post') {
+
+            $this->ordemModel->delete($ordem->id);
+
+            return redirect()->to(site_url("ordens"))->with('sucesso', "A ordem de serviço $ordem->codigo excluída com sucesso!");
+        }
+
+        
+
+        $data = [
+            'titulo' => "Excluíndo a ordem de serviço $ordem->codigo",
+            'ordem' => $ordem,
+        ];
+
+        return view('Ordens/excluir', $data);
+    }
+
+    public function desfazerExclusao(string $codigo = null)
+    {
+        $ordem  = $this->ordemModel->buscaOrdemOu404($codigo);
+
+        if ($ordem->deletado_em == null) {
+            return redirect()->back()->with('info', "Apenas ordens de serviço excluídas podem ser recuparados");
+        }
+
+
+        $ordem->deletado_em = null;
+
+        $this->ordemModel->protect(false)->save($ordem);
+
+        return redirect()->back()->with('sucesso', "Oderm de serviço $ordem->codigo recuperado com sucesso!");
+    }
+
 
     public function buscaClientes()
     {
@@ -232,6 +283,31 @@ class Ordens extends BaseController
 
         $ordem->cliente = $this->clienteModel->select('nome, email')->find($ordem->cliente_id);
 
-        // TODO: enviar e-mail para o cliente com a ordem recém criada
+        $ordem->situacao = 'aberta';
+        $ordem->criado_em = date('Y-m-d H:i');
+        //enviar e-mail para o cliente com a ordem recém criada
+        $this->enviaOrdemEmAndamentoParaCliente($ordem);
+    }
+
+    private function enviaOrdemEmAndamentoParaCliente(object $ordem) : void {
+
+        $email = service('email');
+
+        $email->setFrom('no-reply@ordem.com', 'Ordem de serviço Ltda');
+
+
+        $email->setTo($ordem->cliente->email);
+
+        $email->setSubject("Ordem de serviço $ordem->codigo em andamento");
+
+        $data = [
+            'ordem' => $ordem
+        ];
+
+        $mensagem = view('Ordens/ordem_andamento_email', $data);
+
+        $email->setMessage($mensagem);
+
+        $email->send();
     }
 }

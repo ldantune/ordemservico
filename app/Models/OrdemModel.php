@@ -100,6 +100,7 @@ class OrdemModel extends Model
         $atributos = [
             'ordens.codigo',
             'ordens.criado_em',
+            'ordens.deletado_em',
             'ordens.situacao',
             'clientes.nome',
             'clientes.cpf'

@@ -30,7 +30,7 @@ class ItemModel extends Model
     protected $updatedField  = 'atualizado_em';
     protected $deletedField  = 'deletado_em';
 
- 
+
     // Validation
     protected $validationRules = [
         'nome'    => 'required|max_length[124]|is_unique[itens.nome,id,{id}]',
@@ -55,14 +55,14 @@ class ItemModel extends Model
     protected $beforeInsert   = ['removeVirgulaValores'];
     protected $beforeUpdate   = ['removeVirgulaValores'];
 
-    public function geraCodigoInternoItem() : string{
-        do{
+    public function geraCodigoInternoItem(): string
+    {
+        do {
 
             $codigoInterno = random_string('numeric', 15);
-            
-            $this->where('codigo_interno', $codigoInterno);
 
-        }while($this->countAllResults() > 1);
+            $this->where('codigo_interno', $codigoInterno);
+        } while ($this->countAllResults() > 1);
 
         return $codigoInterno;
     }
@@ -72,17 +72,47 @@ class ItemModel extends Model
         if (isset($data['data']['preco_custo'])) {
 
             $data['data']['preco_custo'] = str_replace(",", "", $data['data']['preco_custo']);
-
         }
 
         if (isset($data['data']['preco_venda'])) {
 
             $data['data']['preco_venda'] = str_replace(",", "", $data['data']['preco_venda']);
-
         }
 
         return $data;
     }
 
+    public function pesquisaItens(string $term = null): array
+    {
+        if ($term === null) {
+            return [];
+        }
 
+        $atributos = [
+            'itens.*',
+            'itens_imagens.imagem'
+        ];
+
+        $itens = $this->select($atributos)
+            ->like('itens.nome', $term)
+            ->orLike('itens.codigo_interno', $term)
+            ->join('itens_imagens', 'itens_imagens.item_id = itens.id', 'LEFT')
+            ->where('itens.ativo', true)
+            ->where('itens.deletado_em', null)
+            ->groupBy('itens.nome')
+            ->findAll();
+        
+        if($itens === null){
+            return [];
+        }
+
+        foreach($itens as $key => $item){
+
+            if($item->tipo === 'produto' && $item->estoque < 1){
+                unset($itens[$key]);
+            }
+        }
+
+        return $itens;
+    }
 }

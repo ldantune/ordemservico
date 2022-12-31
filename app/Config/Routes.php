@@ -76,6 +76,8 @@ $routes->group('formas', function($routes) {
     
 });
 
+//TODO: criar rota para ordens/minhas-ordens que é enviado no e-mail para o cliente
+
 /*
  * --------------------------------------------------------------------
  * Additional Routing
