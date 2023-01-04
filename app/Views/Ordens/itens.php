@@ -40,22 +40,99 @@
 
         <div class="contributions py-3">
           <p>Nenhum item foi adicionado à ordem</p>
-
-
-
-
         </div>
       <?php else : ?>
 
+        <div class="table-responsive my-5">
+          <table class="table table-striped">
+            <thead>
+              <tr>
+                <th scope="col">Item</th>
+                <th scope="col">Tipo</th>
+                <th scope="col">Preço</th>
+                <th scope="col">Qtde</th>
+                <th scope="col">Subtotal</th>
+                <th class="text-center" scope="col">Remover</th>
+              </tr>
+            </thead>
+            <tbody>
 
+              <?php
+              $valorProdutos = 0;
+              $valorServicos = 0;
+
+              ?>
+
+              <?php foreach ($ordem->itens as $item) : ?>
+
+                <?php
+                if ($item->tipo === 'produto') {
+                  $valorProdutos += $item->preco_venda * $item->item_quantidade;
+                } else {
+                  $valorServicos += $item->preco_venda * $item->item_quantidade;
+                }
+
+                $hiddenAcoes = [
+                  'id_principal' => $item->id_principal,
+                  'item_id' => $item->id,
+                ];
+                ?>
+
+                <tr>
+                  <th scope="row"><?php echo ellipsize($item->nome, 32, .5); ?></th>
+                  <td><?php echo esc(ucfirst($item->tipo)); ?></td>
+                  <td>R$ <?php echo esc(number_format($item->preco_venda, 2)); ?></td>
+                  <td>
+                    <?php echo form_open("ordensitens/atualizarquantidade/$ordem->codigo", ['class' => 'form-inline'], $hiddenAcoes); ?>
+                      <input style="max-width: 80px !important;" type="number" name="item_quantidade" class="form-control form-control-sm" value="<?php echo $item->item_quantidade ?>" required>
+                      <button type="submit" class="btn btn-outline-success btn-sm ml-2">
+                        <i class=" fa fa-refresh"></i>
+                      </button>
+                    <?php echo form_close(); ?>
+                  </td>
+                  <td>R$<?php echo esc(number_format($item->item_quantidade * $item->preco_venda, 2)) ?></td>
+                  <td class="text-center">
+                    <?php
+                    $atributosRemover = [
+                      'class' => 'form-inline',
+                      'onClick' => 'return confirm("Tem certeza da exclusão?")',
+                    ];
+                    ?>
+                    <?php echo form_open("ordensitens/removeritem/$ordem->codigo", $atributosRemover); ?>
+                    
+                    <button type="submit" class="btn btn-outline-danger btn-sm ml-2 mx-auto">
+                      <i class="fa fa-trash"></i>
+                    </button>
+                    <?php echo form_close(); ?>
+                  </td>
+                </tr>
+
+              <?php endforeach; ?>
+            </tbody>
+            <tfoot>
+              <tr>
+                <td class="text-right font-weight-bold" colspan="4">
+                  <label>Valor produtos: </label>
+                </td>
+                <td class="font-weight-bold">R$ <?php echo esc(number_format($valorProdutos, 2)); ?></td>
+              </tr>
+              <tr>
+                <td class="text-right font-weight-bold" colspan="4">
+                  <label>Valor serviços: </label>
+                </td>
+                <td class="font-weight-bold">R$ <?php echo esc(number_format($valorServicos, 2)); ?></td>
+              </tr>
+              <tr>
+                <td class="text-right font-weight-bold" colspan="4">
+                  <label>Valor total: </label>
+                </td>
+                <td class="font-weight-bold">R$ <?php echo esc(number_format($valorServicos + $valorProdutos, 2)); ?></td>
+              </tr>
+            </tfoot>
+          </table>
+        </div>
 
       <?php endif; ?>
-
-
-
-
-
-
 
       <hr class="border-secondary">
 
@@ -108,12 +185,13 @@
         </button>
       </div>
       <div class="modal-body">
+        <div id="response"></div>
         <div class="ui-widget">
           <input type="text" name="query" id="query" class="form-control form-control-lg mb-5" placeholder="Pesquise pelo nome ou código do item">
         </div>
 
         <div class="block-body">
-          <div id="response"></div>
+
 
           <?php
           $hiddens = [
@@ -142,8 +220,8 @@
           </div>
 
 
-          <div class="form-group">
-            <input type="submit" class="btn btn-primary" value="Salvar">
+          <div class="form-group mt-5">
+            <input type="submit" id="btn-salvar" class="btn btn-primary" value="Salvar">
             <button type="button" class="btn btn-secondary" data-dismiss="modal">Cancelar</button>
           </div>
 
@@ -168,7 +246,6 @@
   $(document).ready(function() {
 
     $(function() {
-
       $("#query").autocomplete({
         minLength: 4,
         source: function(request, response) {
@@ -227,6 +304,63 @@
           .appendTo(ul);
       }
     });
+
+
+    $("#form").on('submit', function(e) {
+      e.preventDefault();
+      $.ajax({
+        type: 'POST',
+        url: '<?php echo site_url('ordensitens/adicionaritem'); ?>',
+        data: new FormData(this),
+        dataType: 'json',
+        contentType: false,
+        cache: false,
+        processData: false,
+        beforeSend: function() {
+          $("#response").html('');
+          $("#btn-salvar").val('Por favor aguarde...');
+        },
+        success: function(response) {
+
+          $("#btn-salvar").val('Salvar');
+          $("#btn-salvar").removeAttr("disabled");
+          $('[name=csrf_ordem]').val(response.token);
+
+          if (!response.erro) {
+
+            if (response.info) {
+              $("#response").html('<div class="alert alert-info" role="alert">' + response.info + '</div>');
+
+            } else {
+
+              window.location.href = "<?php echo site_url("ordensitens/itens/$ordem->codigo"); ?>";
+
+            }
+          }
+
+          if (response.erro) {
+
+            $("#response").html('<div class="alert alert-danger" role="alert">' + response.erro + '</div>');
+
+            if (response.erros_model) {
+
+              $.each(response.erros_model, function(key, value) {
+                $("#response").append('<ul class="list-unstyled"><li class="text-danger">' + value + '</li></ul>');
+              });
+            }
+          }
+        },
+        error: function() {
+          alert('Não foi possível processar a solicitação. Por favor entre em contato com suporte técnico.');
+          $("#btn-salvar").val('Salvar');
+          $("#btn-salvar").removeAttr("disabled");
+        }
+      });
+    });
+
+    $("#form").submit(function() {
+      $(this).find(":submit").attr('disabled', 'disabled');
+    })
   });
 </script>
 
