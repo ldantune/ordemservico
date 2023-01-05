@@ -62,7 +62,83 @@
                 <?php endif; ?>
               </div>
             <?php else : ?>
+              <div class="table-responsive my-5">
+                <table class="table table-striped text-left">
+                  <thead>
+                    <tr>
+                      <th scope="col">Item</th>
+                      <th scope="col">Tipo</th>
+                      <th scope="col">Preço</th>
+                      <th scope="col">Qtde</th>
+                      <th scope="col">Subtotal</th>
+                    </tr>
+                  </thead>
+                  <tbody>
 
+                    <?php
+                    $valorProdutos = 0;
+                    $valorServicos = 0;
+                    ?>
+
+                    <?php foreach ($ordem->itens as $item) : ?>
+
+                      <?php
+                      if ($item->tipo === 'produto') {
+                        $valorProdutos += $item->preco_venda * $item->item_quantidade;
+                      } else {
+                        $valorServicos += $item->preco_venda * $item->item_quantidade;
+                      }
+                      ?>
+
+                      <tr>
+                        <th scope="row"><?php echo ellipsize($item->nome, 32, .5); ?></th>
+                        <td><?php echo esc(ucfirst($item->tipo)); ?></td>
+                        <td>R$ <?php echo esc(number_format($item->preco_venda, 2)); ?></td>
+                        <td><?php echo $item->item_quantidade ?></td>
+                        <td>R$<?php echo esc(number_format($item->item_quantidade * $item->preco_venda, 2)) ?></td>
+                      </tr>
+
+                    <?php endforeach; ?>
+                  </tbody>
+                  <tfoot>
+                    <tr>
+                      <td class="text-right font-weight-bold" colspan="4">
+                        <label>Valor produtos: </label>
+                      </td>
+                      <td class="font-weight-bold">R$ <?php echo esc(number_format($valorProdutos, 2)); ?></td>
+                    </tr>
+                    <tr>
+                      <td class="text-right font-weight-bold" colspan="4">
+                        <label>Valor serviços: </label>
+                      </td>
+                      <td class="font-weight-bold">R$ <?php echo esc(number_format($valorServicos, 2)); ?></td>
+                    </tr>
+                    <tr>
+                      <td class="text-right font-weight-bold" colspan="4">
+                        <label>Valor desconto: </label>
+                      </td>
+                      <td class="font-weight-bold">R$ <?php echo esc(number_format($ordem->valor_desconto, 2)); ?></td>
+                    </tr>
+                    <tr>
+                      <td class="text-right font-weight-bold" colspan="4">
+                        <label>Valor total da ordem: </label>
+                      </td>
+                      <td class="font-weight-bold">R$ <?php echo esc(number_format($valorServicos + $valorProdutos, 2)); ?></td>
+                    </tr>
+                    <tr>
+                      <td class="text-right font-weight-bold" colspan="4">
+                        <label>Valor total com desconto: </label>
+                      </td>
+                      <td class="font-weight-bold">R$
+                        <?php
+                        $valorItens = $valorServicos + $valorProdutos;
+                        echo esc(number_format($valorItens - $ordem->valor_desconto, 2));
+                        ?>
+                      </td>
+                    </tr>
+                  </tfoot>
+                </table>
+              </div>
 
 
             <?php endif; ?>
@@ -89,7 +165,7 @@
             <a class="dropdown-item" href="<?php echo site_url("ordens/editar/$ordem->codigo"); ?>">Editar ordem</a>
             <a class="dropdown-item" href="<?php echo site_url("ordens/encerrar/$ordem->codigo"); ?>">Encerrar ordem</a>
             <a class="dropdown-item" href="<?php echo site_url("ordensitens/itens/$ordem->codigo"); ?>">Gerênciar itens da ordem</a>
-            <a class="dropdown-item" href="<?php echo site_url("ordens/respomsavel/$ordem->codigo"); ?>">Definir técnico responsável</a>
+            <a class="dropdown-item" href="<?php echo site_url("ordens/responsavel/$ordem->codigo"); ?>">Definir técnico responsável</a>
             <div class="dropdown-divider"></div>
           <?php endif; ?>
 

@@ -15,6 +15,7 @@ class Ordens extends BaseController
     private $ordemResponsavelModel;
     private $transacaoModel;
     private $clienteModel;
+    private $usuarioModel;
 
     public function __construct()
     {
@@ -22,6 +23,7 @@ class Ordens extends BaseController
         $this->ordemResponsavelModel = new \App\Models\OrdemResponsavelModel();
         $this->transacaoModel = new \App\Models\TransacaoModel();
         $this->clienteModel = new \App\Models\ClienteModel();
+        $this->usuarioModel = new \App\Models\UsuarioModel();
     }
 
     public function index()
@@ -195,16 +197,16 @@ class Ordens extends BaseController
 
         $ordem = $this->ordemModel->buscaOrdemOu404($codigo);
 
-        if($ordem->deletado_em != null){
+        if ($ordem->deletado_em != null) {
             return redirect()->back()->with('info', "A ordem de serviço $ordem->codigo já encotra-se excluída");
         }
 
-        $situacoesPermitidas =[
+        $situacoesPermitidas = [
             'encerrada',
             'cancelada'
         ];
 
-        if(!in_array($ordem->situacao, $situacoesPermitidas)){
+        if (!in_array($ordem->situacao, $situacoesPermitidas)) {
             return redirect()->back()->with('info', "Apenas ordens encerradas ou canceladas podem ser excluídas");
         }
 
@@ -215,7 +217,7 @@ class Ordens extends BaseController
             return redirect()->to(site_url("ordens"))->with('sucesso', "A ordem de serviço $ordem->codigo excluída com sucesso!");
         }
 
-        
+
 
         $data = [
             'titulo' => "Excluíndo a ordem de serviço $ordem->codigo",
@@ -268,6 +270,98 @@ class Ordens extends BaseController
         return $this->response->setJSON($clientes);
     }
 
+    public function responsavel(string $codigo = null)
+    {
+
+        $ordem = $this->ordemModel->buscaOrdemOu404($codigo);
+
+        if ($ordem->situacao === 'encerrada') {
+            return redirect()->back()->with("info", "Esta ordem já encontra-se " . ucfirst($ordem->situacao));
+        }
+
+
+        $data = [
+            'titulo' => "Definindo o responsável técnico a ordem de serviço $ordem->codigo",
+            'ordem' => $ordem,
+        ];
+
+        return view('Ordens/responsavel', $data);
+    }
+
+    public function buscaResponsaveis()
+    {
+
+        if (!$this->request->isAJAX()) {
+            return redirect()->back();
+        }
+
+        $termo = $this->request->getGet('termo');
+
+        $responsavel = $this->usuarioModel->recuperaResponsaveisParaOrdem($termo);
+
+        return $this->response->setJSON($responsavel);
+    }
+
+    public function definirResponsavel()
+    {
+
+        if (!$this->request->isAJAX()) {
+            return redirect()->back();
+        }
+
+        // Envio o hash do token do form
+        $retorno['token'] = csrf_hash();
+
+        $validacao = service('validation');
+
+        $regras = [
+            'usuario_responsavel_id' => 'required|greater_than[0]',
+        ];
+
+        $mensagens = [   // Errors
+            'usuario_responsavel_id' => [
+                'required' => 'Por favor pesquise um responsável técnico e tente novamente.',
+                'greater_than' => 'Por favor pesquise um responsável técnico e tente novamente.',
+            ],
+        ];
+
+        $validacao->setRules($regras, $mensagens);
+
+        if ($validacao->withRequest($this->request)->run() === false) {
+
+            $retorno['erro'] = 'Por favor verifique os erros abaixo e tente novamente';
+            $retorno['erros_model']  = $validacao->getErrors();
+
+            return $this->response->setJSON($retorno);
+        }
+
+        // Recupero o post da requisição
+        $post = $this->request->getPost();
+
+        //Validamos a existencia do da ordem
+        $ordem = $this->ordemModel->buscaOrdemOu404($post['codigo']);
+
+        if ($ordem->situacao === 'encerrada') {
+            $retorno['erro'] = 'Por favor verifique os erros abaixo e tente novamente';
+            $retorno['erros_model']  = ['situacao' => "Esta ordem não pode ser editada,pois encontra-se " . ucfirst($ordem->situacao)];
+
+            return $this->response->setJSON($retorno);
+        }
+
+        $usuarioResponsavel = $this->buscaUsuarioOu404($post['usuario_responsavel_id']);
+
+        if ($this->ordemResponsavelModel->defineUsuarioResponsavel($ordem->id, $usuarioResponsavel->id)) {
+            session()->setFlashdata('sucesso', 'Técnico responsável definido com sucess!');
+
+            return $this->response->setJSON($retorno);
+        }
+
+        $retorno['erro'] = 'Por favor verifique os erros abaixo e tente novamente';
+        $retorno['erros_model']  = $this->ordemResponsavelModel->errors();
+
+        return $this->response->setJSON($retorno);
+    }
+
     //---------------------Métodos privados -------------------//
 
     private function finalizaCadastroOrdem(object $ordem): void
@@ -289,7 +383,8 @@ class Ordens extends BaseController
         $this->enviaOrdemEmAndamentoParaCliente($ordem);
     }
 
-    private function enviaOrdemEmAndamentoParaCliente(object $ordem) : void {
+    private function enviaOrdemEmAndamentoParaCliente(object $ordem): void
+    {
 
         $email = service('email');
 
@@ -309,5 +404,14 @@ class Ordens extends BaseController
         $email->setMessage($mensagem);
 
         $email->send();
+    }
+
+    private function buscaUsuarioOu404(int $usuario_responsavel_id = null)
+    {
+        if (!$usuario_responsavel_id || !$usuarioResponsavel = $this->usuarioModel->select('id, nome')->where('ativo', true)->find($usuario_responsavel_id)) {
+            throw \CodeIgniter\Exceptions\PageNotFoundException::forPageNotFound("Não encontramos o usuário $usuario_responsavel_id");
+        }
+
+        return $usuarioResponsavel;
     }
 }

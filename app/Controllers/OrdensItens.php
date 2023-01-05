@@ -238,6 +238,61 @@ class OrdensItens extends BaseController
             ->with('erros_model', $this->ordemItemModel->errors());
     }
 
+    public function removerItem(string $codigo = null)
+    {
+
+        if ($this->request->getMethod() !== 'post') {
+            return redirect()->back();
+        }
+
+        $validacao = service('validation');
+
+        $regras = [
+            'item_id' => 'required',
+            'id_principal' => 'required|greater_than[0]',
+        ];
+
+        $mensagens = [   // Errors
+            'item_id' => [
+                'required' => 'Não conseguimos identificar qual é o item a ser excluído.',
+            ],
+            'id_principal' => [
+                'required' => 'Não conseguimos processar a sua requisição. Escolha novamente o item a ser removido.',
+                'greater_than' => 'Não conseguimos processar a sua requisição. Escolha novamente o item a ser removido.',
+            ],
+        ];
+
+        $validacao->setRules($regras, $mensagens);
+
+        if ($validacao->withRequest($this->request)->run() === false) {
+
+            return redirect()->back()
+                ->with('atencao', 'Por favor verifique os erros abaixo e tente novamente')
+                ->with('erros_model', $validacao->getErrors());
+        }
+
+
+
+        $post = $this->request->getPost();
+
+        // Recupera a ordem de serviço
+        $ordem = $this->ordemModel->buscaOrdemOu404($codigo);
+
+        // Válida a existencia do item
+        $item = $this->buscaItemOu404($post['item_id']);
+
+        // Válida a existencia do registro principal
+        $ordemItem = $this->buscaOrdemItemOu404($post['id_principal'], $ordem->id);
+
+        if ($this->ordemItemModel->delete($ordemItem->id)) {
+            return redirect()->back()->with('sucesso', 'Item removido com sucesso!');
+        }
+
+        return redirect()->back()
+            ->with('atencao', 'Por favor verifique os erros abaixo e tente novamente')
+            ->with('erros_model', $this->ordemItemModel->errors());
+    }
+
     private function buscaItemOu404(int $id = null)
     {
         if (!$id || !$item = $this->itemModel->withDeleted(true)->find($id)) {

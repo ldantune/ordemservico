@@ -98,7 +98,7 @@
                       'onClick' => 'return confirm("Tem certeza da exclusão?")',
                     ];
                     ?>
-                    <?php echo form_open("ordensitens/removeritem/$ordem->codigo", $atributosRemover); ?>
+                    <?php echo form_open("ordensitens/removeritem/$ordem->codigo", $atributosRemover, $hiddenAcoes); ?>
                     
                     <button type="submit" class="btn btn-outline-danger btn-sm ml-2 mx-auto">
                       <i class="fa fa-trash"></i>
@@ -146,7 +146,7 @@
             <a class="dropdown-item" href="<?php echo site_url("ordens/editar/$ordem->codigo"); ?>">Editar ordem</a>
             <a class="dropdown-item" href="<?php echo site_url("ordens/encerrar/$ordem->codigo"); ?>">Encerrar ordem</a>
             <a class="dropdown-item" href="<?php echo site_url("ordensitens/itens/$ordem->codigo"); ?>">Gerênciar itens da ordem</a>
-            <a class="dropdown-item" href="<?php echo site_url("ordens/respomsavel/$ordem->codigo"); ?>">Definir técnico responsável</a>
+            <a class="dropdown-item" href="<?php echo site_url("ordens/responsavel/$ordem->codigo"); ?>">Definir técnico responsável</a>
             <div class="dropdown-divider"></div>
           <?php endif; ?>
 
@@ -166,7 +166,7 @@
         </div>
       </div>
 
-      <a href="<?php echo site_url("ordens"); ?>" class="btn btn-secondary ml-2 btn-sm">Voltar</a>
+      <a href="<?php echo site_url("ordens/detalhes/$ordem->codigo"); ?>" class="btn btn-secondary ml-2 btn-sm">Voltar</a>
     </div> <!-- ./block -->
   </div>
 
