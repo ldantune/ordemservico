@@ -7,6 +7,9 @@ use App\Controllers\BaseController;
 use App\Entities\Ordem;
 use App\Traits\OrdemTrait;
 
+// reference the Dompdf namespace
+use Dompdf\Dompdf;
+
 class Ordens extends BaseController
 {
     use OrdemTrait;
@@ -369,13 +372,39 @@ class Ordens extends BaseController
 
         $this->preparaItensDaOrdem($ordem);
 
-        if($ordem->situacao === 'aberta'){
+        if ($ordem->situacao === 'aberta') {
             $this->enviaOrdemEmAndamentoParaCliente($ordem);
-        }else{
+        } else {
             $this->enviaOrdemEncerradaParaCliente($ordem);
         }
 
         return redirect()->to(site_url("ordens/detalhes/$ordem->codigo"))->with('sucesso', "Ordem enviada para o e-mail do cliente.");
+    }
+
+    public function gerarPdf(string $codigo = null)
+    {
+
+        $ordem = $this->ordemModel->buscaOrdemOu404($codigo);
+
+        $this->preparaItensDaOrdem($ordem);
+
+        $data = [
+            'titulo' => "Gerar PDF da ordem de serviço $ordem->codigo",
+            'ordem' => $ordem,
+        ];
+
+        // instantiate and use the dompdf class
+        $dompdf = new Dompdf();
+        $dompdf->loadHtml(view('Ordens/gerar_pdf', $data));
+
+        // (Optional) Setup the paper size and orientation
+        $dompdf->setPaper('A4', 'landscape');
+
+        // Render the HTML as PDF
+        $dompdf->render();
+
+        // Output the generated PDF to Browser
+        $dompdf->stream("Detalhes-da-ordem-$ordem->codigo.pdf", ["Attachment" => false]);
     }
 
     //---------------------Métodos privados -------------------//
@@ -406,9 +435,9 @@ class Ordens extends BaseController
 
         $email->setFrom('no-reply@ordem.com', 'Ordem de serviço Ltda');
 
-        if(isset($ordem->cliente)){
+        if (isset($ordem->cliente)) {
             $emailCliente = $ordem->cliente->email;
-        }else{
+        } else {
             $emailCliente = $ordem->email;
         }
 
@@ -434,21 +463,19 @@ class Ordens extends BaseController
 
         $email->setFrom('no-reply@ordem.com', 'Ordem de serviço Ltda');
 
-        if(isset($ordem->cliente)){
+        if (isset($ordem->cliente)) {
             $emailCliente = $ordem->cliente->email;
-        }else{
+        } else {
             $emailCliente = $ordem->email;
         }
 
         $email->setTo($emailCliente);
 
-        if(isset($ordem->transacao)){
+        if (isset($ordem->transacao)) {
             $tituloEmail = "Ordem de serviço $ordem->codigo encerrada com Boleto Bancário.";
-
         } else {
 
             $tituloEmail = "Ordem de serviço $ordem->codigo encerrada.";
-
         }
 
         $email->setSubject($tituloEmail);
