@@ -17,7 +17,7 @@
         <?php if ($ordem->usuario_responsavel !== null) : ?>
 
 
-          <p class="contributions mt-0">Técnico responsável: <?php echo esc($ordem->usuario_encerramento) ?></p>
+          <p class="contributions mt-0">Técnico responsável: <?php echo esc($ordem->usuario_responsavel) ?></p>
         <?php endif; ?>
 
       <?php endif; ?>

@@ -69,7 +69,7 @@
             if (response.info) {
               $("#response").html('<div class="alert alert-info" role="alert">' + response.info + '</div>');
             } else {
-              window.location.href = "<?php echo site_url("ordens/detalhes/$ordem->codigo"); ?>";
+              window.location.href = "<?php echo site_url(); ?>" + response.redirect;
             }
           }
 

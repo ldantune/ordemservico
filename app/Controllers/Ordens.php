@@ -182,9 +182,20 @@ class Ordens extends BaseController
             return $this->response->setJSON($retorno);
         }
 
-        if ($this->ordemModel->protect(false)->save($ordem)) {
+        if ($this->ordemModel->save($ordem)) {
+
+            if (session()->has('ordem-encerrar')) {
+
+                session()->setFlashdata('sucesso', 'Parecer técnico foi definido com sucess!');
+
+                $retorno['redirect'] = "ordens/encerrar/$ordem->codigo";
+
+                return $this->response->setJSON($retorno);
+            }
 
             session()->setFlashdata('sucesso', 'Dados salvos com sucesso!');
+
+            $retorno['redirect'] = "ordens/detalhes/$ordem->codigo";
             return $this->response->setJSON($retorno);
         }
 
@@ -354,7 +365,19 @@ class Ordens extends BaseController
         $usuarioResponsavel = $this->buscaUsuarioOu404($post['usuario_responsavel_id']);
 
         if ($this->ordemResponsavelModel->defineUsuarioResponsavel($ordem->id, $usuarioResponsavel->id)) {
+
+            if (session()->has('ordem-encerrar')) {
+
+                session()->setFlashdata('sucesso', 'Agora já é possível encerrar a ordem de serviço');
+
+                $retorno['redirect'] = "ordens/encerrar/$ordem->codigo";
+
+                return $this->response->setJSON($retorno);
+            }
+
             session()->setFlashdata('sucesso', 'Técnico responsável definido com sucess!');
+
+            $retorno['redirect'] = "ordens/responsavel/$ordem->codigo";
 
             return $this->response->setJSON($retorno);
         }
@@ -405,6 +428,111 @@ class Ordens extends BaseController
 
         // Output the generated PDF to Browser
         $dompdf->stream("Detalhes-da-ordem-$ordem->codigo.pdf", ["Attachment" => false]);
+    }
+
+    public function encerrar(string $codigo = null)
+    {
+
+        $ordem = $this->ordemModel->buscaOrdemOu404($codigo);
+
+        if ($ordem->parecer_tecnico === null) {
+            return redirect()->to(site_url("ordens/editar/$ordem->codigo"))->with('atencao', 'Por favor informe qual é o Parecer Técnico da Ordem');
+        }
+
+        session()->set('ordem-encerrar', $ordem->codigo);
+
+        if ($ordem->situacao !== 'aberta') {
+            return redirect()->back()->with('atencao', 'Apenas ordens em aberto podem ser encerradas');
+        }
+
+        if (!$this->ordemTemResponsavel($ordem->id)) {
+            return redirect()->to(site_url("ordens/responsavel/$ordem->codigo"))->with('atencao', 'Escolha um resposável técnico antes de encerrar a ordem de serviço');
+        }
+
+        $this->preparaItensDaOrdem($ordem);
+
+        $data = [
+            'titulo' => "Encerrar a ordem de serviço $ordem->codigo",
+            'ordem' => $ordem
+        ];
+        //TODO: enviar formas de pagamento
+        return view('Ordens/encerrar', $data);
+    }
+
+    public function inserirDesconto()
+    {
+
+        if (!$this->request->isAJAX()) {
+            return redirect()->back();
+        }
+
+        // Envio o hash do token do form
+        $retorno['token'] = csrf_hash();
+
+        // Recupero o post da requisição
+        $post = $this->request->getPost();
+
+        $validacao = service('validation');
+
+        $regras = [
+            'valor_desconto' => 'required',
+        ];
+
+        $mensagens = [   // Errors
+            'valor_desconto' => [
+                'required' => 'Por favor informe o valor do desconto maior que zero.',
+            ],
+        ];
+
+        $validacao->setRules($regras, $mensagens);
+
+        if ($validacao->withRequest($this->request)->run() === false) {
+
+            $retorno['erro'] = 'Por favor verifique os erros abaixo e tente novamente';
+            $retorno['erros_model']  = $validacao->getErrors();
+
+            return $this->response->setJSON($retorno);
+        }
+
+        $valorDesconto = str_replace([',', '.'], '', $post['valor_desconto']);
+
+        if ($valorDesconto <= 0) {
+            $retorno['erro'] = 'Por favor verifique os erros abaixo e tente novamente';
+            $retorno['erros_model']  = ['valor_desconto' => 'Por favor informe o valor do desconto maior que zero.'];
+
+            return $this->response->setJSON($retorno);
+        }
+
+        //Validamos a existencia do da ordem
+        $ordem = $this->ordemModel->buscaOrdemOu404($post['codigo']);
+
+        $ordem->valor_desconto = str_replace([','], '', $post['valor_desconto']);
+
+        if ($ordem->hasChanged() === false) {
+            $retorno['infor']  = 'Não há dados para atualizar';
+
+            return $this->response->setJSON($retorno);
+        }
+
+        if ($this->ordemModel->save($ordem)) {
+
+            $descontoBoleto = getenv('gerenciaNetDesconto') / 100 . '%';
+
+            $descontoAdicionado = "R$ " . number_format($ordem->valor_desconto, 2);
+
+            session()->setFlashdata('sucesso', "Desconto de $descontoAdicionado inserido com sucesso!");
+
+            $usuarioLogado = usuario_logado()->nome;
+
+            session()->setFlashdata('info', "<b>$usuarioLogado</b>, se esta ordem for encerrada com <b>Boleto Bancário</b>, prevalecerá o valor de desconto de <b>$descontoBoleto</b> para esse método de pagamento.");
+
+            return $this->response->setJSON($retorno);
+        }
+
+        $retorno['erro'] = 'Por favor verifique os erros abaixo e tente novamente';
+        $retorno['erros_model']  = $this->ordemModel->errors();
+
+        return $this->response->setJSON($retorno);
     }
 
     //---------------------Métodos privados -------------------//
@@ -498,5 +626,15 @@ class Ordens extends BaseController
         }
 
         return $usuarioResponsavel;
+    }
+
+    private function ordemTemResponsavel(int $ordem_id): bool
+    {
+
+        if ($this->ordemResponsavelModel->where('ordem_id', $ordem_id)->where('usuario_responsavel_id', null)->first()) {
+            return false;
+        }
+
+        return true;
     }
 }

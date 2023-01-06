@@ -163,7 +163,7 @@
 
           if (!response.erro) {
 
-            window.location.href = "<?php echo site_url("ordens/responsavel/$ordem->codigo"); ?>";
+            window.location.href = "<?php echo site_url(); ?>" + response.redirect;
 
           }
 
