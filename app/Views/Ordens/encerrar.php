@@ -233,7 +233,7 @@
         </div>
       </div>
 
-      <a href="<?php echo site_url("ordens"); ?>" class="btn btn-secondary ml-2 btn-sm">Voltar</a>
+      <a href="<?php echo site_url("ordens/detalhes/$ordem->codigo"); ?>" class="btn btn-secondary ml-2 btn-sm">Voltar</a>
     </div> <!-- ./block -->
   </div>
 
@@ -359,6 +359,58 @@
           alert('Não foi possível processar a solicitação. Por favor entre em contato com suporte técnico.');
           $("#btn-inserir").val('Salvar desconto');
           $("#btn-inserir").removeAttr("disabled");
+        }
+      });
+    });
+
+    $("#formRemover").on('submit', function(e) {
+      e.preventDefault();
+      $.ajax({
+        type: 'POST',
+        url: '<?php echo site_url('ordens/removerdesconto'); ?>',
+        data: new FormData(this),
+        dataType: 'json',
+        contentType: false,
+        cache: false,
+        processData: false,
+        beforeSend: function() {
+          $("#response").html('');
+          $("#btn-remover").val('Por favor aguarde...');
+        },
+        success: function(response) {
+
+          $("#btn-remover").val('Salvar desconto');
+          $("#btn-remover").removeAttr("disabled");
+          $('[name=csrf_ordem]').val(response.token);
+
+          if (!response.erro) {
+
+            if (response.info) {
+              $("#response").html('<div class="alert alert-info" role="alert">' + response.info + '</div>');
+
+            } else {
+
+              window.location.href = "<?php echo site_url("ordens/encerrar/$ordem->codigo"); ?>";
+
+            }
+          }
+
+          if (response.erro) {
+
+            $("#response").html('<div class="alert alert-danger" role="alert">' + response.erro + '</div>');
+
+            if (response.erros_model) {
+
+              $.each(response.erros_model, function(key, value) {
+                $("#response").append('<ul class="list-unstyled"><li class="text-danger">' + value + '</li></ul>');
+              });
+            }
+          }
+        },
+        error: function() {
+          alert('Não foi possível processar a solicitação. Por favor entre em contato com suporte técnico.');
+          $("#btn-remover").val('Salvar desconto');
+          $("#btn-remover").removeAttr("disabled");
         }
       });
     });

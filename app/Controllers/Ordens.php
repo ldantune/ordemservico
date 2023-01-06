@@ -516,15 +516,44 @@ class Ordens extends BaseController
 
         if ($this->ordemModel->save($ordem)) {
 
-            $descontoBoleto = getenv('gerenciaNetDesconto') / 100 . '%';
+            $this->defineMensagensDesconto($ordem->valor_desconto);
 
-            $descontoAdicionado = "R$ " . number_format($ordem->valor_desconto, 2);
+            return $this->response->setJSON($retorno);
+        }
 
-            session()->setFlashdata('sucesso', "Desconto de $descontoAdicionado inserido com sucesso!");
+        $retorno['erro'] = 'Por favor verifique os erros abaixo e tente novamente';
+        $retorno['erros_model']  = $this->ordemModel->errors();
 
-            $usuarioLogado = usuario_logado()->nome;
+        return $this->response->setJSON($retorno);
+    }
 
-            session()->setFlashdata('info', "<b>$usuarioLogado</b>, se esta ordem for encerrada com <b>Boleto Bancário</b>, prevalecerá o valor de desconto de <b>$descontoBoleto</b> para esse método de pagamento.");
+    public function removerDesconto()
+    {
+
+        if (!$this->request->isAJAX()) {
+            return redirect()->back();
+        }
+
+        // Envio o hash do token do form
+        $retorno['token'] = csrf_hash();
+
+        // Recupero o post da requisição
+        $post = $this->request->getPost();
+
+        //Validamos a existencia do da ordem
+        $ordem = $this->ordemModel->buscaOrdemOu404($post['codigo']);
+
+        $ordem->valor_desconto = null;
+
+        if ($ordem->hasChanged() === false) {
+            $retorno['infor']  = 'Não há dados para atualizar';
+
+            return $this->response->setJSON($retorno);
+        }
+
+        if ($this->ordemModel->save($ordem)) {
+
+            session()->setFlashdata('sucesso', "Desconto removido com sucesso!");
 
             return $this->response->setJSON($retorno);
         }
@@ -636,5 +665,17 @@ class Ordens extends BaseController
         }
 
         return true;
+    }
+
+    private function defineMensagensDesconto(string $valorDesconto){
+        $descontoBoleto = getenv('gerenciaNetDesconto') / 100 . '%';
+
+            $descontoAdicionado = "R$ " . number_format($valorDesconto, 2);
+
+            session()->setFlashdata('sucesso', "Desconto de $descontoAdicionado inserido com sucesso!");
+
+            $usuarioLogado = usuario_logado()->nome;
+
+            session()->setFlashdata('info', "<b>$usuarioLogado</b>, se esta ordem for encerrada com <b>Boleto Bancário</b>, prevalecerá o valor de desconto de <b>$descontoBoleto</b> para esse método de pagamento.");
     }
 }
