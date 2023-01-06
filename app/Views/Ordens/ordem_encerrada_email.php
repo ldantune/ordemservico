@@ -1,11 +1,12 @@
-<?php
-  $nomeCliente = (isset($ordem->cliente->nome) ? $ordem->cliente->nome : $ordem->nome)
-?>
+<h3 class="text-center">Olá, <?php echo esc($ordem->nome); ?></h3>
 
-<h3 class="text-center">Olá, <?php echo esc($nomeCliente); ?></h3>
+<p>Sua ordem de serviço foi
+  <strong>encerrada</strong>
+</p>
 
-<p>Até o momento a sua ordem de serviço está com o status de <strong><?php echo esc(ucfirst($ordem->situacao)) ?></strong></p>
-
+<p>
+  <strong>Informações da ordem de serviço</strong>
+</p>
 <p>
   <strong>
     Equipamento:
@@ -22,6 +23,12 @@
   <strong>
     Observações:
   </strong> <?php echo esc($ordem->observacoes != null ? $ordem->observacoes : 'Não informado'); ?>
+</p>
+
+<p>
+  <strong>
+    Parecer técnico:
+  </strong> <?php echo esc($ordem->parecer_tecnico != null ? $ordem->parecer_tecnico : 'Não informado'); ?>
 </p>
 
 <p>
@@ -48,7 +55,7 @@
 
   <p>
     <strong>
-      Valores até o momento:
+      Valores finais:
     </strong>
   </p>
 
@@ -62,10 +69,26 @@
       Valores de serviços: R$&nbsp; <?php echo number_format($valorServicos, 2); ?>
     </strong>
   </p>
+  <p>
+    <strong>
+      Valores de desconto: R$&nbsp; <?php echo number_format($ordem->valor_desconto, 2); ?>
+    </strong>
+  </p>
+  <p>
+    <strong>
+      Valor Total sem desconto: R$&nbsp; <?php echo number_format($valorProduto + $valorServicos, 2); ?>
+    </strong>
+  </p>
 
   <p>
     <strong>
-      Valor Total: R$&nbsp; <?php echo number_format($valorProduto + $valorServicos, 2); ?>
+      Valor Total com desconto: R$&nbsp; <?php echo number_format(($valorProduto + $valorServicos) - $ordem->valor_desconto, 2); ?>
+    </strong>
+  </p>
+
+  <p>
+    <strong>
+      Forma de pagamento:&nbsp; <?php echo esc($ordem->forma_pagamento); ?>
     </strong>
   </p>
 <?php endif; ?>

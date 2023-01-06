@@ -12,7 +12,7 @@
 
 <?php echo $this->section('conteudo') ?>
 <div class="row">
-  <div class="col-lg-12">
+  <div class="col-lg-12" id="divPrincipalDetalhes">
     <div class="block">
 
       <ul class="nav nav-pills mb-3" id="pills-tab" role="tablist">
@@ -172,7 +172,7 @@
 
           <a class="dropdown-item" href="<?php echo site_url("ordensevidencias/evidencias/$ordem->codigo"); ?>">Evidências da ordem</a>
 
-          <a class="dropdown-item" href="<?php echo site_url("ordens/email/$ordem->codigo"); ?>">Enviar por e-mail</a>
+          <a class="dropdown-item" id="btn-enviar-email" href="<?php echo site_url("ordens/email/$ordem->codigo"); ?>">Enviar por e-mail</a>
           <a class="dropdown-item" href="<?php echo site_url("ordens/gerarpdf/$ordem->codigo"); ?>">Gerar PDF</a>
           <div class="dropdown-divider"></div>
 
@@ -195,5 +195,19 @@
 
 
 <?php echo $this->section('scripts') ?>
+
+<script src="<?php echo site_url('recursos/vendor/loadingoverlay/loadingoverlay.min.js') ?>"></script>
+
+<script>
+  $(document).ready(function() {
+    $("#btn-enviar-email").on('click', function () { 
+      $("#divPrincipalDetalhes").LoadingOverlay("show",{
+        image: "",
+        text:"Enviando e-mail...",
+        fontawesome : "fa fa-paper-plane",
+      });
+     });
+  });
+</script>
 
 <?php echo $this->endSection() ?>

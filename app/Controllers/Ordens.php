@@ -362,6 +362,22 @@ class Ordens extends BaseController
         return $this->response->setJSON($retorno);
     }
 
+    public function email(string $codigo = null)
+    {
+
+        $ordem = $this->ordemModel->buscaOrdemOu404($codigo);
+
+        $this->preparaItensDaOrdem($ordem);
+
+        if($ordem->situacao === 'aberta'){
+            $this->enviaOrdemEmAndamentoParaCliente($ordem);
+        }else{
+            $this->enviaOrdemEncerradaParaCliente($ordem);
+        }
+
+        return redirect()->to(site_url("ordens/detalhes/$ordem->codigo"))->with('sucesso', "Ordem enviada para o e-mail do cliente.");
+    }
+
     //---------------------Métodos privados -------------------//
 
     private function finalizaCadastroOrdem(object $ordem): void
@@ -390,8 +406,13 @@ class Ordens extends BaseController
 
         $email->setFrom('no-reply@ordem.com', 'Ordem de serviço Ltda');
 
+        if(isset($ordem->cliente)){
+            $emailCliente = $ordem->cliente->email;
+        }else{
+            $emailCliente = $ordem->email;
+        }
 
-        $email->setTo($ordem->cliente->email);
+        $email->setTo($emailCliente);
 
         $email->setSubject("Ordem de serviço $ordem->codigo em andamento");
 
@@ -400,6 +421,43 @@ class Ordens extends BaseController
         ];
 
         $mensagem = view('Ordens/ordem_andamento_email', $data);
+
+        $email->setMessage($mensagem);
+
+        $email->send();
+    }
+
+    private function enviaOrdemEncerradaParaCliente(object $ordem): void
+    {
+
+        $email = service('email');
+
+        $email->setFrom('no-reply@ordem.com', 'Ordem de serviço Ltda');
+
+        if(isset($ordem->cliente)){
+            $emailCliente = $ordem->cliente->email;
+        }else{
+            $emailCliente = $ordem->email;
+        }
+
+        $email->setTo($emailCliente);
+
+        if(isset($ordem->transacao)){
+            $tituloEmail = "Ordem de serviço $ordem->codigo encerrada com Boleto Bancário.";
+
+        } else {
+
+            $tituloEmail = "Ordem de serviço $ordem->codigo encerrada.";
+
+        }
+
+        $email->setSubject($tituloEmail);
+
+        $data = [
+            'ordem' => $ordem
+        ];
+
+        $mensagem = view('Ordens/ordem_encerrada_email', $data);
 
         $email->setMessage($mensagem);
 
