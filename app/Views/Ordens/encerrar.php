@@ -27,7 +27,7 @@
               </h2>
             </div>
 
-            <div id="collapseOne" class="collapse show" aria-labelledby="headingOne" data-parent="#accordionExample">
+            <div id="collapseOne" class="collapse" aria-labelledby="headingOne" data-parent="#accordionExample">
               <div class="card-body">
                 <div class="user-title mb-4">
                   <h5 class="cart-title mt-2"><?php echo esc($ordem->nome); ?></h5>
@@ -187,13 +187,48 @@
             <div class="card-header" id="headingTwo">
               <h2 class="mb-0">
                 <button class="btn btn-link btn-block text-left collapsed" type="button" data-toggle="collapse" data-target="#collapseTwo" aria-expanded="false" aria-controls="collapseTwo">
-                  Collapsible Group Item #2
+                  Escolha a forma de pagamento para o encerramento da ordem
                 </button>
               </h2>
             </div>
-            <div id="collapseTwo" class="collapse" aria-labelledby="headingTwo" data-parent="#accordionExample">
+            <div id="collapseTwo" class="collapse show" aria-labelledby="headingTwo" data-parent="#accordionExample">
               <div class="card-body">
-                Some placeholder content for the second accordion panel. This panel is hidden by default.
+                <div id="response"></div>
+
+
+                <div class="block-body">
+
+                  <?php echo form_open('/', ['id' => 'formEncerramento'], ['codigo' => $ordem->codigo]) ?>
+
+                  <div class="form-row">
+                    <div class="form-group col-md-6">
+                      <label class="form-control-label">Forma de pagamento</label>
+                      <select name="forma_pagamento_id" class="custom-select">
+                        <option value="">Escolha a forma...</option>
+
+                        <?php foreach ($formasPagamentos as $forma) : ?>
+                          <?php
+                          $textoDesconto = (isset($descontoBoleto) && $forma->id == 1 ? "desconto de $descontoBoleto" : "");
+                          ?>
+
+                          <option value="<?php echo $forma->id; ?>"><?php echo esc($forma->nome); ?>&nbsp;<?php echo $textoDesconto ?></option>
+                        <?php endforeach; ?>
+                      </select>
+                    </div>
+                  </div>
+                  <div class="form-row">
+                    <div id="boleto" class="form-group col-md-6 d-none">
+                      <label class="form-control-label">Data de vencimento do boleto</label>
+                      <input type="date" name="data_vencimento" class="form-control">
+                    </div>
+                  </div>
+
+                  <div class="form-group col-6">
+                    <input type="submit" id="btn-encerramento" class="btn btn-outline-success mt-2" value="Processar encerramento">
+                  </div>
+
+                  <?php echo form_close(); ?>
+                </div>
               </div>
             </div>
           </div>
@@ -211,10 +246,6 @@
         <div class="dropdown-menu">
           <?php if ($ordem->situacao === 'aberta') : ?>
             <a class="dropdown-item" href="<?php echo site_url("ordens/editar/$ordem->codigo"); ?>">Editar ordem</a>
-            <a class="dropdown-item" href="<?php echo site_url("ordens/encerrar/$ordem->codigo"); ?>">Encerrar ordem</a>
-            <a class="dropdown-item" href="<?php echo site_url("ordensitens/itens/$ordem->codigo"); ?>">Gerênciar itens da ordem</a>
-            <a class="dropdown-item" href="<?php echo site_url("ordens/responsavel/$ordem->codigo"); ?>">Definir técnico responsável</a>
-            <div class="dropdown-divider"></div>
           <?php endif; ?>
 
 
@@ -271,7 +302,7 @@
 
           <div class="form-group">
             <input type="submit" id="btn-inserir" class="btn btn-outline-success btn-block mt-2" value="Salvar desconto">
-            
+
           </div>
 
           <?php echo form_close(); ?>
@@ -302,13 +333,13 @@
 <script src="<?php echo site_url('recursos/vendor/mask/app.js') ?>"></script>
 <script>
   $(document).ready(function() {
-    // $("#btn-enviar-email").on('click', function() {
-    //   $("#divPrincipalDetalhes").LoadingOverlay("show", {
-    //     image: "",
-    //     text: "Enviando e-mail...",
-    //     fontawesome: "fa fa-paper-plane",
-    //   });
-    // });
+    $("#btn-enviar-email").on('click', function() {
+      $("#divPrincipalDetalhes").LoadingOverlay("show", {
+        image: "",
+        text: "Enviando e-mail...",
+        fontawesome: "fa fa-paper-plane",
+      });
+    });
 
 
     $("#formInserir").on('submit', function(e) {
@@ -415,6 +446,72 @@
       });
     });
 
+
+    $("[name=forma_pagamento_id]").on('change', function() {
+
+      var forma_pagamento_id = parseInt($(this).val());
+      if(forma_pagamento_id === 1){
+        $("#boleto").removeClass('d-none');
+
+        $("[name=data_vencimento]").prop('disabled', false);
+      }else{
+        $("#boleto").addClass('d-none');
+        $("[name=data_vencimento]").prop('disabled', true);
+      }
+    });
+
+    $("#formEncerramento").on('submit', function(e) {
+      e.preventDefault();
+      $.ajax({
+        type: 'POST',
+        url: '<?php echo site_url('ordens/processaencerramento'); ?>',
+        data: new FormData(this),
+        dataType: 'json',
+        contentType: false,
+        cache: false,
+        processData: false,
+        beforeSend: function() {
+          $("#response").html('');
+          $("#btn-encerramento").val('Por favor aguarde...');
+        },
+        success: function(response) {
+
+          $("#btn-encerramento").val('Processar encerramento');
+          $("#btn-encerramento").removeAttr("disabled");
+          $('[name=csrf_ordem]').val(response.token);
+
+          if (!response.erro) {
+
+            if (response.info) {
+              $("#response").html('<div class="alert alert-info" role="alert">' + response.info + '</div>');
+
+            } else {
+
+              window.location.href = "<?php echo site_url("ordens/detalhes/$ordem->codigo"); ?>";
+
+            }
+          }
+
+          if (response.erro) {
+
+            $("#response").html('<div class="alert alert-danger" role="alert">' + response.erro + '</div>');
+
+            if (response.erros_model) {
+
+              $.each(response.erros_model, function(key, value) {
+                $("#response").append('<ul class="list-unstyled"><li class="text-danger">' + value + '</li></ul>');
+              });
+            }
+          }
+        },
+        error: function() {
+          alert('Não foi possível processar a solicitação. Por favor entre em contato com suporte técnico.');
+          $("#btn-encerramento").val('Processar encerramento');
+          $("#btn-encerramento").removeAttr("disabled");
+        }
+      });
+    });
+
     $("#formInserir").submit(function() {
       $(this).find(":submit").attr('disabled', 'disabled');
     });
@@ -423,7 +520,7 @@
       $(this).find(":submit").attr('disabled', 'disabled');
     });
 
-    $("#formEnceramento").submit(function() {
+    $("#formEncerramento").submit(function() {
       $(this).find(":submit").attr('disabled', 'disabled');
     });
   });

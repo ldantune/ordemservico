@@ -19,6 +19,7 @@ class Ordens extends BaseController
     private $transacaoModel;
     private $clienteModel;
     private $usuarioModel;
+    private $formaPagamentoModel;
 
     public function __construct()
     {
@@ -27,6 +28,7 @@ class Ordens extends BaseController
         $this->transacaoModel = new \App\Models\TransacaoModel();
         $this->clienteModel = new \App\Models\ClienteModel();
         $this->usuarioModel = new \App\Models\UsuarioModel();
+        $this->formaPagamentoModel = new \App\Models\FormaPagamentoModel();
     }
 
     public function index()
@@ -401,7 +403,7 @@ class Ordens extends BaseController
             $this->enviaOrdemEncerradaParaCliente($ordem);
         }
 
-        return redirect()->to(site_url("ordens/detalhes/$ordem->codigo"))->with('sucesso', "Ordem enviada para o e-mail do cliente.");
+        return redirect()->back()->with('sucesso', "Ordem enviada para o e-mail do cliente.");
     }
 
     public function gerarPdf(string $codigo = null)
@@ -435,18 +437,18 @@ class Ordens extends BaseController
 
         $ordem = $this->ordemModel->buscaOrdemOu404($codigo);
 
+        session()->set('ordem-encerrar', $ordem->codigo);
+
+        if (!$this->ordemTemResponsavel($ordem->id)) {
+            return redirect()->to(site_url("ordens/responsavel/$ordem->codigo"))->with('atencao', 'Escolha um resposável técnico antes de encerrar a ordem de serviço');
+        }
+
         if ($ordem->parecer_tecnico === null) {
             return redirect()->to(site_url("ordens/editar/$ordem->codigo"))->with('atencao', 'Por favor informe qual é o Parecer Técnico da Ordem');
         }
 
-        session()->set('ordem-encerrar', $ordem->codigo);
-
         if ($ordem->situacao !== 'aberta') {
             return redirect()->back()->with('atencao', 'Apenas ordens em aberto podem ser encerradas');
-        }
-
-        if (!$this->ordemTemResponsavel($ordem->id)) {
-            return redirect()->to(site_url("ordens/responsavel/$ordem->codigo"))->with('atencao', 'Escolha um resposável técnico antes de encerrar a ordem de serviço');
         }
 
         $this->preparaItensDaOrdem($ordem);
@@ -455,8 +457,87 @@ class Ordens extends BaseController
             'titulo' => "Encerrar a ordem de serviço $ordem->codigo",
             'ordem' => $ordem
         ];
-        //TODO: enviar formas de pagamento
+
+        if ($ordem->itens !== null) {
+
+            $data['formasPagamentos'] = $this->formaPagamentoModel->where('id !=', getenv('formaPagamentoCortesia'))->where('ativo', true)->findAll();
+
+            $data['descontoBoleto'] =  getenv('gerenciaNetDesconto') / 100 . '%';
+        } else {
+            $data['formasPagamentos'] = $this->formaPagamentoModel->where('id', getenv('formaPagamentoCortesia'))->findAll();
+        }
+
+
         return view('Ordens/encerrar', $data);
+    }
+
+    public function processaEncerramento()
+    {
+
+        if (!$this->request->isAJAX()) {
+            return redirect()->back();
+        }
+
+        // Envio o hash do token do form
+        $retorno['token'] = csrf_hash();
+
+        // Recupero o post da requisição
+        $post = $this->request->getPost();
+
+        $validacao = service('validation');
+
+        $regras = [
+            'forma_pagamento_id' => 'required',
+        ];
+
+        $mensagens = [   // Errors
+            'forma_pagamento_id' => [
+                'required' => 'Por favor escolha a forma de pagamento.',
+            ],
+        ];
+
+        $validacao->setRules($regras, $mensagens);
+
+        if ($validacao->withRequest($this->request)->run() === false) {
+
+            $retorno['erro'] = 'Por favor verifique os erros abaixo e tente novamente';
+            $retorno['erros_model']  = $validacao->getErrors();
+
+            return $this->response->setJSON($retorno);
+        }
+
+        $formaPagamento = $this->formaPagamentoModel->where('ativo', true)->find($post['forma_pagamento_id']);
+
+        if ($formaPagamento === null) {
+            $retorno['erro'] = 'Por favor verifique os erros abaixo e tente novamente';
+            $retorno['erros_model']  = ['forma' => 'Não encontramos a forma de pagamento escolhida. Tente novamente'];
+
+            return $this->response->setJSON($retorno);
+        }
+
+        if ((int)$formaPagamento->id === 1) {
+            if (empty($post['data_vencimento']) || $post['data_vencimento'] == "") {
+                $retorno['erro'] = 'Por favor verifique os erros abaixo e tente novamente';
+                $retorno['erros_model']  = ['data_vencimento' => 'Para a forma de pagamento <b class="text-white">Boleto bancário</b>, por favor informe a <b class="text-white">Data de vencimento</b>'];
+
+                return $this->response->setJSON($retorno);
+            }
+
+            if ($post['data_vencimento'] < date('Y-m-d')) {
+                $retorno['erro'] = 'Por favor verifique os erros abaixo e tente novamente';
+                $retorno['erros_model']  = ['data_vencimento' => 'Para a forma de pagamento <b class="text-white">Boleto bancário</b>, a Data de Vencimento <b class="text-white">não pode</b> ser menor que a data atual.'];
+
+                return $this->response->setJSON($retorno);
+            }
+        }
+
+        $ordem = $this->ordemModel->buscaOrdemOu404($post['codigo']);
+
+        $this->preparaItensDaOrdem($ordem);
+
+        echo '<pre>';
+        print_r($ordem);
+        exit;
     }
 
     public function inserirDesconto()
@@ -667,15 +748,16 @@ class Ordens extends BaseController
         return true;
     }
 
-    private function defineMensagensDesconto(string $valorDesconto){
+    private function defineMensagensDesconto(string $valorDesconto)
+    {
         $descontoBoleto = getenv('gerenciaNetDesconto') / 100 . '%';
 
-            $descontoAdicionado = "R$ " . number_format($valorDesconto, 2);
+        $descontoAdicionado = "R$ " . number_format($valorDesconto, 2);
 
-            session()->setFlashdata('sucesso', "Desconto de $descontoAdicionado inserido com sucesso!");
+        session()->setFlashdata('sucesso', "Desconto de $descontoAdicionado inserido com sucesso!");
 
-            $usuarioLogado = usuario_logado()->nome;
+        $usuarioLogado = usuario_logado()->nome;
 
-            session()->setFlashdata('info', "<b>$usuarioLogado</b>, se esta ordem for encerrada com <b>Boleto Bancário</b>, prevalecerá o valor de desconto de <b>$descontoBoleto</b> para esse método de pagamento.");
+        session()->setFlashdata('info', "<b>$usuarioLogado</b>, se esta ordem for encerrada com <b>Boleto Bancário</b>, prevalecerá o valor de desconto de <b>$descontoBoleto</b> para esse método de pagamento.");
     }
 }
