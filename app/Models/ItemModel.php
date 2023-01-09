@@ -115,4 +115,30 @@ class ItemModel extends Model
 
         return $itens;
     }
+
+    public function realizaBaixaNoEstoqueDeProdutos(array $produtos){
+        $arrayIds = array_column($produtos, 'id');
+
+        $produtosEstoque = $this->select('id, estoque')->whereIn('id', $arrayIds)->asArray()->findAll();
+
+        $arrayEstoque = [];
+
+        foreach($produtos as $produto){
+
+            foreach($produtosEstoque as $pEstoque){
+
+                if($produto['id'] == $pEstoque['id']){
+                    $novaQuantidadeEstoque = (int)$pEstoque['estoque'] - (int)$produto['quantidade'];
+
+                    array_push($arrayEstoque, [
+                        'id' => $pEstoque['id'],
+                        'estoque' => $novaQuantidadeEstoque
+                    ]);
+                }
+                
+            }
+        }
+
+        return $this->updateBatch($arrayEstoque, 'id');
+    }
 }

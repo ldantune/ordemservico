@@ -22,6 +22,7 @@ class Ordens extends BaseController
     private $clienteModel;
     private $usuarioModel;
     private $formaPagamentoModel;
+    private $itemModel;
 
     public function __construct()
     {
@@ -31,6 +32,7 @@ class Ordens extends BaseController
         $this->clienteModel = new \App\Models\ClienteModel();
         $this->usuarioModel = new \App\Models\UsuarioModel();
         $this->formaPagamentoModel = new \App\Models\FormaPagamentoModel();
+        $this->itemModel = new \App\Models\ItemModel();
     }
 
     public function index()
@@ -571,7 +573,9 @@ class Ordens extends BaseController
 
         if ($this->ordemModel->save($ordem)) {
 
-            //TODO: Validar se existem itens do tipo produtos que precisam ser dados baixa no estoque
+            if(isset($ordem->produtos) && (int)$formaPagamento->id > 2){
+                $this->itemModel->realizaBaixaNoEstoqueDeProdutos($ordem->produtos);
+            }            
 
             $this->ordemResponsavelModel->defineUsuarioEncerramento($ordem->id, usuario_logado()->id);
 

@@ -75,7 +75,7 @@ class Item extends Entity
 
             if ($this->hasChanged('controla_estoque')) {
 
-                if ($this->controla_estoque === true) {
+                if ($this->controla_estoque == true) {
 
                     $atribustosAlterados['controla_estoque'] = "O controle de estoque foi ativado";
                 } else {
@@ -87,7 +87,7 @@ class Item extends Entity
 
         if ($this->hasChanged('ativo')) {
 
-            if ($this->ativo === true) {
+            if ($this->ativo == true) {
 
                 $atribustosAlterados['ativo'] = "O item  está ativo";
             } else {
