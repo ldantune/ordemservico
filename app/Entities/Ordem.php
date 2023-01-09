@@ -54,4 +54,13 @@ class Ordem extends Entity
             }
         }
     }
+
+    public function defineDataVencimentoEvento(string $expire_at) : int {
+
+        $dataAtualCovertida = $this->mutateDate(date('Y-m-d'));
+
+        $dataCalculo = ($expire_at ? $expire_at : $this->data_vencimento);
+
+        return $dataAtualCovertida->difference($dataCalculo)->getDays();
+    }
 }

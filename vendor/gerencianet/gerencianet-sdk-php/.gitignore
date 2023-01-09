@@ -1,4 +1,8 @@
+composer.phar
 composer.lock
 vendor/
-examples/open-accounts/
-examples/pix/split/
+phpunit.phar
+phpunit.php
+coverage/
+build/
+.idea/

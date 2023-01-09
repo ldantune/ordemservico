@@ -39,4 +39,125 @@ class Operacoes
     $this->transacaoModel = new \App\Models\TransacaoModel();
     $this->eventoModel = new \App\Models\EventoModel();
   }
+
+  public function registraBoleto()
+  {
+
+    foreach ($this->ordem->itens as $item) {
+
+      $itemBoleto = [
+        'name' => $item->nome, // nome do item, produto ou serviço
+        'amount' => (int) $item->item_quantidade, // quantidade
+        'value' => (int) str_replace([',', '.'], '', $item->preco_venda)
+      ];
+
+      $items[] = $itemBoleto;
+    }
+
+    //TODO: Url de notificações
+    $urlNotificacoes = null;
+    $metadata = array('notification_url' => $urlNotificacoes);
+
+    $customer = [
+      'name' => $this->ordem->nome, // nome do cliente
+      'cpf' => str_replace(['.', '-'], '', $this->ordem->cpf), // cpf válido do cliente
+      'phone_number' => str_replace(['(', ')', ' ','-'], '', $this->ordem->telefone), // telefone do cliente
+      'email' => $this->ordem->email,
+    ];
+
+    $discount = [ // configuração de descontos
+      'type' => 'percentage', // tipo de desconto a ser aplicado
+      'value' => $this->gerenciaNetDesconto // valor de desconto 
+    ];
+
+    $configurations = [ // configurações de juros e mora
+      'fine' => 200, // porcentagem de multa
+      'interest' => 33 // porcentagem de juros
+    ];
+
+    $bankingBillet = [
+      'expire_at' => $this->ordem->data_vencimento, // data de vencimento do titulo
+      'message' => "Boleto referente à ordem de serviço " .$this->ordem->codigo, // mensagem a ser exibida no boleto
+      'customer' => $customer,
+      'discount' => $discount,
+      //'conditional_discount' => $conditional_discount
+    ];
+
+    $payment = [
+      'banking_billet' => $bankingBillet // forma de pagamento (banking_billet = boleto)
+    ];
+
+    $body = [
+      'items' => $items,
+      'metadata' => $metadata,
+      'payment' => $payment
+    ];
+
+    
+    try {
+
+      $api = new Gerencianet($this->options);
+
+      $pay_charge = $api->oneStep([],$body);
+
+      if(isset($pay_charge['error'])){
+
+        $this->ordem->erro_transacao = $pay_charge['error_description'];
+
+
+        return $this->ordem;
+      }
+
+      $objetoRetorno = json_decode(json_encode($pay_charge));
+
+      $this->preparaOrdemParaEncerrar($this->ordem, $this->formaPagamento);
+
+      //Atualizamos a ordem
+      $this->ordemModel->save($this->ordem);
+
+      $transacao = new \App\Entities\Transacao();
+
+      $transacao->ordem_id = $this->ordem->id;
+
+      $transacao->charge_id = $objetoRetorno->data->charge_id;
+
+      $transacao->barcode = $objetoRetorno->data->barcode;
+
+      $transacao->link = $objetoRetorno->data->link;
+
+      $transacao->pdf = $objetoRetorno->data->pdf->charge;
+
+      $transacao->expire_at = $objetoRetorno->data->expire_at;
+
+      $transacao->status = $objetoRetorno->data->status;
+
+      $transacao->total = $objetoRetorno->data->total / 100;
+
+      //Salva a transação
+      $this->transacaoModel->save($transacao);
+
+      //Cria o atributo transação
+      $this->ordem->transacao = $transacao;
+
+      //Criação do evento
+      $tituloEvento = "Boleto para a ordem " .$this->ordem->codigo . ", cliente " . $this->ordem->nome;
+      $dias = $this->ordem->defineDataVencimentoEvento($objetoRetorno->data->expire_at);
+
+      $this->eventoModel->cadastraEvento('ordem_id', $tituloEvento, $this->ordem->id, $dias);
+
+      return $this->ordem;
+
+      // echo '<pre>';
+      // print_r($pay_charge);
+      // echo '<pre>';
+      // exit;
+    } catch (GerencianetException $e) {
+      print_r($e);
+      print_r($e->code);
+      print_r($e->error);
+      print_r($e->errorDescription);
+    } catch (\Exception $e) {
+      print_r($e->getMessage());
+    }
+  }
 }

@@ -12,6 +12,7 @@ class TransacaoModel extends Model
     protected $protectFields    = true;
     protected $allowedFields    = [
         'ordem_id',
+        'charge_id',
         'barcode',
         'link',
         'pdf',

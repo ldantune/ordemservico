@@ -29,13 +29,11 @@ class Config
         $config = json_decode($file, true);
 
         if (json_last_error() !== JSON_ERROR_NONE) {
-            throw new \Exception('Error loading endpoint file');
+            throw new \Exception("Erro ao carregar endpoints do arquivo");
         }
-
+        
         if (isset($config[$property])) {
             return $config[$property];
-        } else {
-            return $config['APIs'][$property];
         }
 
         return;
@@ -50,33 +48,37 @@ class Config
         if (isset($options['client_id'])) {
             $conf['clientId'] = $options['client_id'];
         }
-
         if (isset($options['client_secret'])) {
             $conf['clientSecret'] = $options['client_secret'];
         }
-
         if (isset($options['timeout'])) {
             $conf['timeout'] = $options['timeout'];
+        }
+
+        if(Config::isPix($options))
+            $conf['pixCert'] = $options['pix_cert'];
+
+        if (isset($options['url'])) {
+            $conf['baseUri'] = $options['url'];
+        } else {
+            $config = self::get('URL');
+            $config = Config::isPix($options) ? $config['PIX'] : $config['DEFAULT'];
+            $conf['baseUri'] = $config['production'];
+
+            if ($conf['sandbox']) {
+                $conf['baseUri'] = $config['sandbox'];
+            }
         }
 
         if (isset($options['headers'])) {
             $conf['headers'] = $options['headers'];
         }
 
-        if (isset($options['url'])) {
-            $conf['baseUri'] = $options['url'];
-        }
-
-        if ($options['api'] !== 'CHARGES') {
-            $conf['certificate'] = (isset($options['certificate']) ? $options['certificate'] : $options['pix_cert']);
-        }
-
-        if ($conf['debug']) {
-            ini_set('display_errors', 1);
-            ini_set('display_startup_errors', 1);
-            error_reporting(E_ALL);
-        }
-
         return $conf;
+    }
+
+    public static function isPix($options)
+    {
+        return (isset($options['pix_cert']) && is_string($options['pix_cert']));
     }
 }

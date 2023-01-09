@@ -341,6 +341,14 @@
       });
     });
 
+    // $("#btn-encerramento").on('click', function() {
+    //   $("#divPrincipalDetalhes").LoadingOverlay("show", {
+    //     image: "",
+    //     text: "Encerrando ordem de serviço...",
+    //     fontawesome: "fa fa-paper-plane",
+    //   });
+    // });
+
 
     $("#formInserir").on('submit', function(e) {
       e.preventDefault();
@@ -450,11 +458,11 @@
     $("[name=forma_pagamento_id]").on('change', function() {
 
       var forma_pagamento_id = parseInt($(this).val());
-      if(forma_pagamento_id === 1){
+      if (forma_pagamento_id === 1) {
         $("#boleto").removeClass('d-none');
 
         $("[name=data_vencimento]").prop('disabled', false);
-      }else{
+      } else {
         $("#boleto").addClass('d-none');
         $("[name=data_vencimento]").prop('disabled', true);
       }
@@ -473,9 +481,15 @@
         beforeSend: function() {
           $("#response").html('');
           $("#btn-encerramento").val('Por favor aguarde...');
+
+          $("#divPrincipalDetalhes").LoadingOverlay("show", {
+            image: "",
+            text: "Encerrando ordem de serviço...",
+            fontawesome: "fa fa-hourglass-half",
+          });
         },
         success: function(response) {
-
+          $("#divPrincipalDetalhes").LoadingOverlay("hide", true);
           $("#btn-encerramento").val('Processar encerramento');
           $("#btn-encerramento").removeAttr("disabled");
           $('[name=csrf_ordem]').val(response.token);
@@ -508,6 +522,7 @@
           alert('Não foi possível processar a solicitação. Por favor entre em contato com suporte técnico.');
           $("#btn-encerramento").val('Processar encerramento');
           $("#btn-encerramento").removeAttr("disabled");
+          $("#divPrincipalDetalhes").LoadingOverlay("hide", true);
         }
       });
     });

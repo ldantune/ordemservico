@@ -10,6 +10,8 @@ use App\Traits\OrdemTrait;
 // reference the Dompdf namespace
 use Dompdf\Dompdf;
 
+use App\Transacao\Gerencianet\Operacoes;
+
 class Ordens extends BaseController
 {
     use OrdemTrait;
@@ -535,9 +537,42 @@ class Ordens extends BaseController
 
         $this->preparaItensDaOrdem($ordem);
 
-        echo '<pre>';
+        //Pagamento com boleto
+        if ((int)$formaPagamento->id === 1 && $ordem->itens !== null) {
+
+            $ordem->data_vencimento = $post['data_vencimento'];
+
+            $objetoOperacao = new Operacoes($ordem, $formaPagamento);
+
+            $objetoOperacao->registraBoleto();
+
+
+            if (isset($ordem->erro_transacao)) {
+                $retorno['erro'] = 'Por favor verifique os erros abaixo e tente novamente';
+                $retorno['erros_model']  = ['erro_transacao' => $ordem->erro_transacao];
+
+                return $this->response->setJSON($retorno);
+            }
+
+
+            $href = $ordem->transacao->link;
+
+            $btnBoleto = anchor("$href", 'Imprimir o Boleto', ['class' => 'btn btn-danger bagde btn-sm mt-2', 'target' => '_blank']);
+            session()->setFlashdata('sucesso', "Boleto registrado com sucesso com vencimento em " . date('d/m/Y', strtotime($ordem->data_vencimento)) . "! <br> 
+                           Aproveite para " . $btnBoleto);
+
+            session()->remove('ordem-encerrar');
+
+            return $this->response->setJSON($retorno);
+        }
+
+        // Outras formas de pagamento
+        $this->preparaOrdemParaEncerrar($ordem, $formaPagamento);
+
         print_r($ordem);
         exit;
+
+
     }
 
     public function inserirDesconto()

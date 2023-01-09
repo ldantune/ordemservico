@@ -52,7 +52,6 @@ class ComposerStaticInit72bfbfc00d45ff89c7d350c4248827e0
             'GuzzleHttp\\Psr7\\' => 16,
             'GuzzleHttp\\Promise\\' => 19,
             'GuzzleHttp\\' => 11,
-            'Gerencianet\\' => 12,
         ),
         'F' => 
         array (
@@ -90,8 +89,8 @@ class ComposerStaticInit72bfbfc00d45ff89c7d350c4248827e0
         ),
         'Psr\\Http\\Message\\' => 
         array (
-            0 => __DIR__ . '/..' . '/psr/http-message/src',
-            1 => __DIR__ . '/..' . '/psr/http-factory/src',
+            0 => __DIR__ . '/..' . '/psr/http-factory/src',
+            1 => __DIR__ . '/..' . '/psr/http-message/src',
         ),
         'Psr\\Http\\Client\\' => 
         array (
@@ -133,10 +132,6 @@ class ComposerStaticInit72bfbfc00d45ff89c7d350c4248827e0
         array (
             0 => __DIR__ . '/..' . '/guzzlehttp/guzzle/src',
         ),
-        'Gerencianet\\' => 
-        array (
-            0 => __DIR__ . '/..' . '/gerencianet/gerencianet-sdk-php/src/Gerencianet',
-        ),
         'FontLib\\' => 
         array (
             0 => __DIR__ . '/..' . '/phenx/php-font-lib/src/FontLib',
@@ -169,6 +164,13 @@ class ComposerStaticInit72bfbfc00d45ff89c7d350c4248827e0
             'org\\bovigo\\vfs\\' => 
             array (
                 0 => __DIR__ . '/..' . '/mikey179/vfsstream/src/main/php',
+            ),
+        ),
+        'G' => 
+        array (
+            'Gerencianet' => 
+            array (
+                0 => __DIR__ . '/..' . '/gerencianet/gerencianet-sdk-php/src',
             ),
         ),
     );

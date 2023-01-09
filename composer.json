@@ -9,7 +9,7 @@
         "codeigniter4/framework": "^4.0",
         "picqer/php-barcode-generator": "^2.2",
         "dompdf/dompdf": "^2.0",
-        "gerencianet/gerencianet-sdk-php": "^5.1"
+        "gerencianet/gerencianet-sdk-php": "4.1.1"
     },
     "require-dev": {
         "fakerphp/faker": "^1.9",

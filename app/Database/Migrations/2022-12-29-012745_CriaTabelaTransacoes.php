@@ -20,6 +20,11 @@ class CriaTabelaTransacoes extends Migration
                 'constraint'     => 5,
                 'unsigned'       => true
             ],
+            'charge_id' => [ 
+                'type'           => 'VARCHAR',
+                'constraint'     => '200',
+                'null'       => true,
+            ],
             'barcode' => [ 
                 'type'           => 'VARCHAR',
                 'constraint'     => '200',
