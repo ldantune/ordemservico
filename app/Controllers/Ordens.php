@@ -569,10 +569,30 @@ class Ordens extends BaseController
         // Outras formas de pagamento
         $this->preparaOrdemParaEncerrar($ordem, $formaPagamento);
 
-        print_r($ordem);
-        exit;
+        if ($this->ordemModel->save($ordem)) {
 
+            //TODO: Validar se existem itens do tipo produtos que precisam ser dados baixa no estoque
 
+            $this->ordemResponsavelModel->defineUsuarioEncerramento($ordem->id, usuario_logado()->id);
+
+            session()->setFlashdata('sucesso', 'Ordem encerrrada com sucesso!');
+
+            session()->remove('ordem-encerrar');
+
+            if($ordem->itens !== null){
+                
+                $ordem->itens = unserialize($ordem->itens);
+            }
+
+            $this->enviaOrdemEncerradaParaCliente($ordem);
+
+            return $this->response->setJSON($retorno);
+        }
+
+        $retorno['erro'] = 'Por favor verifique os erros abaixo e tente novamente';
+        $retorno['erros_model']  = $this->ordemModel->erros();
+
+        return $this->response->setJSON($retorno);
     }
 
     public function inserirDesconto()

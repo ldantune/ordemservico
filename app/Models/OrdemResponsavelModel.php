@@ -21,4 +21,11 @@ class OrdemResponsavelModel extends Model
             ->where('ordem_id', $ordem_id)
             ->update();
     }
+
+    public function defineUsuarioEncerramento(int $ordem_id, int $usuario_encerramento_id)
+    {
+        return $this->set('usuario_encerramento_id', $usuario_encerramento_id)
+            ->where('ordem_id', $ordem_id)
+            ->update();
+    }
 }
