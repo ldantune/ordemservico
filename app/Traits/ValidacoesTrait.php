@@ -4,7 +4,7 @@ namespace App\Traits;
 
 trait ValidacoesTrait
 {
-  public function consultaViaCep(string $cep): array
+  public function consultaViaCep(string $cep = null): array
   {
 
     $cep = str_replace('-', '', $cep);
@@ -50,7 +50,7 @@ trait ValidacoesTrait
     return $retorno;
   }
 
-  public function checkEmail(string $email, bool $bypass = false): array
+  public function checkEmail(string $email = null, bool $bypass = false): array
   {
 
     $retorno = [];

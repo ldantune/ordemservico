@@ -291,6 +291,28 @@ class Clientes extends BaseController
         return $this->response->setJSON($this->checkEmail($email));
     }
 
+    public function historico(int $id = null)
+    {
+        $cliente  = $this->buscaClienteOu404($id);
+
+        $data = [
+            'titulo' => "Histórico de atendimento do cliente " . esc($cliente->nome),
+            'cliente' => $cliente
+        ];
+
+        $ordemModel = new \App\Models\OrdemModel();
+
+        $ordensCliente = $ordemModel->where('cliente_id', $cliente->id)->orderBy('ordens.id', 'DESC')->paginate(5);
+
+        if($ordensCliente != null){
+            $data['ordensCliente'] = $ordensCliente;
+            $data['pager'] = $ordemModel->pager;
+        }
+
+        return view('Clientes/historico', $data);
+    }
+    
+
     private function buscaClienteOu404(int $id = null)
     {
         if (!$id || !$cliente = $this->clienteModel->withDeleted(true)->find($id)) {
