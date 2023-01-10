@@ -44,7 +44,7 @@ class Login extends BaseController
 
         if($usuarioLogado->is_cliente){
 
-            $retorno['redirect'] = 'ordens/minha';
+            $retorno['redirect'] = 'ordens/minhas';
             return $this->response->setJSON($retorno);
 
         }

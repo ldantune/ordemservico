@@ -113,6 +113,26 @@ class OrdemModel extends Model
             ->findAll();
     }
 
+    public function recuperaOrdensClienteLogado(int $usuario_id)
+    {
+
+        $atributos = [
+            'ordens.codigo',
+            'ordens.criado_em',
+            'ordens.deletado_em',
+            'ordens.situacao',
+            'clientes.nome',
+            'clientes.cpf'
+        ];
+
+        return $this->select($atributos)
+            ->join('clientes', 'clientes.id = ordens.cliente_id')
+            ->join('usuarios', 'usuarios.id = clientes.usuario_id')
+            ->where('usuarios.id', $usuario_id)
+            ->orderBy('ordens.id', 'DESC')
+            ->findAll();
+    }
+
     public function geraCodigoInternoOrdem(): string
     {
         do {

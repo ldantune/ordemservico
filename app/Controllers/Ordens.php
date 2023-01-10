@@ -704,6 +704,69 @@ class Ordens extends BaseController
         return $this->response->setJSON($retorno);
     }
 
+    public function minhas()
+    {
+        $data = [
+            'titulo' => 'Listando as ordens de serviços'
+        ];
+
+        return view('Ordens/minhas', $data);
+    }
+
+    public function recuperaOrdensCliente()
+    {
+        if (!$this->request->isAJAX()) {
+            return redirect()->back();
+        }
+
+        $ordens = $this->ordemModel->recuperaOrdensClienteLogado(usuario_logado()->id);
+
+        $data = [];
+
+        foreach ($ordens as $ordem) {
+            $data[] = [
+                $ordem->codigo= anchor("ordens/exibirordemcliente/$ordem->codigo", esc($ordem->codigo), 'title="Exibir ordem ' . esc($ordem->codigo) . '"'),
+                esc($ordem->nome),
+                esc($ordem->cpf),
+                esc($ordem->criado_em->humanize()),
+                $ordem->exibeSituacao(),
+            ];
+        }
+
+        $retorno = [
+            'data' => $data
+        ];
+
+        return $this->response->setJSON($retorno);
+    }
+
+    public function exibirOrdemCliente(string $codigo = null)
+    {
+
+        $ordem = $this->ordemModel->buscaOrdemOu404($codigo);
+
+        if($ordem->cliente_usuario_id != usuario_logado()->id){
+            return redirect()->back()->with('atencao', "Não encontramos a ordem de serviço $codigo");
+        }
+
+        $evidenciaModel = new \App\Models\OrdemEvidenciaModel();
+
+        $evidencias = $evidenciaModel->where('ordem_id', $ordem->id)->findAll();
+
+        if($evidencias != null){
+            $ordem->evidencias = $evidencias;
+        }
+
+        $this->preparaItensDaOrdem($ordem);
+
+        $data = [
+            'titulo' => "Detalhando a minha ordem de serviço $ordem->codigo",
+            'ordem' => $ordem,
+        ];
+
+        return view('Ordens/exibir_ordem_cliente', $data);
+    }
+
     //---------------------Métodos privados -------------------//
 
     private function finalizaCadastroOrdem(object $ordem): void

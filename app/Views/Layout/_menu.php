@@ -4,6 +4,7 @@
 
   <li class="<?php echo (url_is('/') ? 'active' : '') ?>"><a href="<?php echo site_url('/') ?>"> <i class="icon-home"></i>Home </a></li>
 
+  <li class="<?php echo (url_is('ordens*') ? 'active' : '') ?>"><a href="<?php echo site_url('ordens/minhas') ?>"> <i class="fa fa-list"></i>Minhas Ordens </a></li>
   <li class="<?php echo (url_is('ordens*') ? 'active' : '') ?>"><a href="<?php echo site_url('ordens') ?>"> <i class="fa fa-list"></i>Ordem de Serviço </a></li>
   <li class="<?php echo (url_is('usuarios*') ? 'active' : '') ?>"><a href="<?php echo site_url('usuarios') ?>"> <i class="icon-user"></i>Usuários </a></li>
   <li class="<?php echo (url_is('fornecedores*') ? 'active' : '') ?>"><a href="<?php echo site_url('fornecedores') ?>"> <i class="icon-user"></i>Fornecedores </a></li>
