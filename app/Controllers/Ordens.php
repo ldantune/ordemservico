@@ -573,9 +573,9 @@ class Ordens extends BaseController
 
         if ($this->ordemModel->save($ordem)) {
 
-            if(isset($ordem->produtos) && (int)$formaPagamento->id > 2){
+            if (isset($ordem->produtos) && (int)$formaPagamento->id > 2) {
                 $this->itemModel->realizaBaixaNoEstoqueDeProdutos($ordem->produtos);
-            }            
+            }
 
             $this->ordemResponsavelModel->defineUsuarioEncerramento($ordem->id, usuario_logado()->id);
 
@@ -583,8 +583,8 @@ class Ordens extends BaseController
 
             session()->remove('ordem-encerrar');
 
-            if($ordem->itens !== null){
-                
+            if ($ordem->itens !== null) {
+
                 $ordem->itens = unserialize($ordem->itens);
             }
 
@@ -725,7 +725,7 @@ class Ordens extends BaseController
 
         foreach ($ordens as $ordem) {
             $data[] = [
-                $ordem->codigo= anchor("ordens/exibirordemcliente/$ordem->codigo", esc($ordem->codigo), 'title="Exibir ordem ' . esc($ordem->codigo) . '"'),
+                $ordem->codigo = anchor("ordens/exibirordemcliente/$ordem->codigo", esc($ordem->codigo), 'title="Exibir ordem ' . esc($ordem->codigo) . '"'),
                 esc($ordem->nome),
                 esc($ordem->cpf),
                 esc($ordem->criado_em->humanize()),
@@ -745,15 +745,17 @@ class Ordens extends BaseController
 
         $ordem = $this->ordemModel->buscaOrdemOu404($codigo);
 
-        if($ordem->cliente_usuario_id != usuario_logado()->id){
-            return redirect()->back()->with('atencao', "Não encontramos a ordem de serviço $codigo");
+        if (!usuario_logado()->is_admin) {
+            if ($ordem->cliente_usuario_id != usuario_logado()->id) {
+                return redirect()->back()->with('atencao', "Não encontramos a ordem de serviço $codigo");
+            }
         }
 
         $evidenciaModel = new \App\Models\OrdemEvidenciaModel();
 
         $evidencias = $evidenciaModel->where('ordem_id', $ordem->id)->findAll();
 
-        if($evidencias != null){
+        if ($evidencias != null) {
             $ordem->evidencias = $evidencias;
         }
 

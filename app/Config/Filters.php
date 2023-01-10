@@ -25,6 +25,7 @@ class Filters extends BaseConfig
         'secureheaders' => SecureHeaders::class,
         'login'         => \App\Filters\LoginFilter::class,
         'visitante'         => \App\Filters\VisitanteFilter::class,
+        'cliente'         => \App\Filters\ClienteFilter::class,
     ];
 
     /**
@@ -91,6 +92,12 @@ class Filters extends BaseConfig
             'before' => [
                 'login(/*)?',
                 'password(/*)?',
+            ]
+        ],
+        'cliente' => [
+            'before' => [
+                'ordens/minhas',
+                'ordens/exibirordemcliente(/*)?',
             ]
         ],
     ];
