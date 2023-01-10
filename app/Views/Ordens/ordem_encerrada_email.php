@@ -96,7 +96,7 @@
 <hr>
 
 <p>
-  Não deixe de consultar <a target="_blank" href="<?php echo site_url("ordens/minhas-ordens") ?>">as suas ordens de serviços</a>
+  Não deixe de consultar <a target="_blank" href="<?php echo site_url("ordens/minhas") ?>">as suas ordens de serviços</a>
 </p>
 
 <small>Não é necessário responder esse e-mail</small>

@@ -63,4 +63,11 @@ class Ordem extends Entity
 
         return $dataAtualCovertida->difference($dataCalculo)->getDays();
     }
+
+    public function isImage(string $evidencia): bool{
+
+        $info = new \SplFileInfo($evidencia);
+
+        return ($info->getExtension() != 'pdf' ? true : false);
+    }
 }

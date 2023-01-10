@@ -76,7 +76,24 @@ $routes->group('formas', function($routes) {
     
 });
 
-//TODO: criar rota para ordens/minhas-ordens que é enviado no e-mail para o cliente
+$routes->group('ordensitens', function($routes) {
+    $routes->add('itens/(:segment)', 'OrdensItens::itens/$1');
+    $routes->add('pesquisaitens', 'OrdensItens::pesquisaItens');
+    $routes->add('adicionaritem', 'OrdensItens::adicionarItem');
+    $routes->add('atualizarquantidade/(:segment)', 'OrdensItens::atualizarQuantidade/$1');
+    $routes->add('removeritem/(:segment)', 'OrdensItens::removerItem/$1');
+});
+
+$routes->group('ordensevidencias', function($routes) {
+
+    $routes->add('evidencias/(:segment)', 'OrdensEvidencias::evidencias/$1');
+
+    $routes->add('upload', 'OrdensEvidencias::upload');
+
+    $routes->add('arquivo/(:segment)', 'OrdensEvidencias::arquivo/$1');
+    
+    $routes->add('removerevidencia/(:segment)', 'OrdensEvidencias::removerEvidencia/$1');
+});
 
 /*
  * --------------------------------------------------------------------
