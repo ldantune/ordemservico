@@ -61,7 +61,7 @@ class Operacoes
     $customer = [
       'name' => $this->ordem->nome, // nome do cliente
       'cpf' => str_replace(['.', '-'], '', $this->ordem->cpf), // cpf válido do cliente
-      'phone_number' => str_replace(['(', ')', ' ','-'], '', $this->ordem->telefone), // telefone do cliente
+      'phone_number' => str_replace(['(', ')', ' ', '-'], '', $this->ordem->telefone), // telefone do cliente
       'email' => $this->ordem->email,
     ];
 
@@ -77,7 +77,7 @@ class Operacoes
 
     $bankingBillet = [
       'expire_at' => $this->ordem->data_vencimento, // data de vencimento do titulo
-      'message' => "Boleto referente à ordem de serviço " .$this->ordem->codigo, // mensagem a ser exibida no boleto
+      'message' => "Boleto referente à ordem de serviço " . $this->ordem->codigo, // mensagem a ser exibida no boleto
       'customer' => $customer,
       'discount' => $discount,
       //'conditional_discount' => $conditional_discount
@@ -93,14 +93,14 @@ class Operacoes
       'payment' => $payment
     ];
 
-    
+
     try {
 
       $api = new Gerencianet($this->options);
 
-      $pay_charge = $api->oneStep([],$body);
+      $pay_charge = $api->oneStep([], $body);
 
-      if(isset($pay_charge['error'])){
+      if (isset($pay_charge['error'])) {
 
         $this->ordem->erro_transacao = $pay_charge['error_description'];
 
@@ -140,7 +140,7 @@ class Operacoes
       $this->ordem->transacao = $transacao;
 
       //Criação do evento
-      $tituloEvento = "Boleto para a ordem " .$this->ordem->codigo . ", cliente " . $this->ordem->nome;
+      $tituloEvento = "Boleto para a ordem " . $this->ordem->codigo . ", cliente " . $this->ordem->nome;
       $dias = $this->ordem->defineDataVencimentoEvento($objetoRetorno->data->expire_at);
 
       $this->eventoModel->cadastraEvento('ordem_id', $tituloEvento, $this->ordem->id, $dias);
@@ -157,6 +157,38 @@ class Operacoes
       print_r($e->error);
       print_r($e->errorDescription);
     } catch (\Exception $e) {
+      print_r($e->getMessage());
+    }
+  }
+
+  public function alteraVencimentoTransacao()
+  {
+    // $charge_id refere-se ao ID da transação gerada anteriormente
+    $params = [
+      'id' => $this->ordem->transacao->charge_id,
+    ];
+
+    $body = [
+      'expire_at' => $this->ordem->transacao->expire_at,
+      //'expire_at' => '2023-01-12',
+    ];
+
+    try {
+      $api = new Gerencianet($this->options);
+
+      $charge = $api->updateBillet($params, $body);
+
+      echo '<pre>';
+      print_r($charge);
+    } catch (GerencianetException $e) {
+      echo '<pre>';
+      print_r($e->code);
+      echo '<pre>';
+      print_r($e->error);
+      echo '<pre>';
+      print_r($e->errorDescription);
+    } catch (\Exception $e) {
+      echo '<pre>';
       print_r($e->getMessage());
     }
   }

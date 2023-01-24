@@ -17,17 +17,17 @@
 
       <ul class="nav nav-pills mb-3" id="pills-tab" role="tablist">
         <li class="nav-item" role="presentation">
-          <button class="nav-link active" id="pills-home-tab" data-toggle="pill" data-target="#pills-home" type="button" role="tab" aria-controls="pills-home" aria-selected="true">Detalhes da Ordem</button>
+          <button class="nav-link <?php echo (session()->has('transacao') ? '' : 'active'); ?>" id="pills-home-tab" data-toggle="pill" data-target="#pills-home" type="button" role="tab" aria-controls="pills-home" aria-selected="true">Detalhes da Ordem</button>
         </li>
 
         <?php if (isset($ordem->transacao)) : ?>
           <li class="nav-item" role="presentation">
-            <button class="nav-link" id="pills-profile-tab" data-toggle="pill" data-target="#pills-profile" type="button" role="tab" aria-controls="pills-profile" aria-selected="false">Transações da Ordem</button>
+            <button class="nav-link <?php echo (session()->has('transacao') ? 'active' : ''); ?>" id="pills-profile-tab" data-toggle="pill" data-target="#pills-profile" type="button" role="tab" aria-controls="pills-profile" aria-selected="false">Transações da Ordem</button>
           </li>
         <?php endif; ?>
       </ul>
-      <div class="tab-content" id="pills-tabContent">
-        <div class="tab-pane fade show active" id="pills-home" role="tabpanel" aria-labelledby="pills-home-tab">
+      <div class="tab-content mb-3" id="pills-tabContent">
+        <div class="tab-pane fade <?php echo (session()->has('transacao') ? '' : 'show active'); ?>" id="pills-home" role="tabpanel" aria-labelledby="pills-home-tab">
 
           <div class="user-block text-center">
             <div class="user-title mb-4">
@@ -146,7 +146,21 @@
           </div>
         </div>
         <?php if (isset($ordem->transacao)) : ?>
-          <div class="tab-pane fade" id="pills-profile" role="tabpanel" aria-labelledby="pills-profile-tab">Transações da ordem</div>
+          <div class="tab-pane fade <?php echo (session()->has('transacao') ? 'show active' : ''); ?>" id="pills-profile" role="tabpanel" aria-labelledby="pills-profile-tab">
+            <div class="row">
+              <div class="col-sm-4">
+                <div class="card border-secondary">
+                  <div class="card-body">
+                      <h5 class="card-title">
+                        Alterar data de vencimento
+                      </h5>
+                      <p class="card-text">Possibilita alterar a data de vencimento de uma transação que tenha sido feita com a geração de boleto bancário que ainda não foi pago.</p>
+                      <a href="<?php echo site_url("transacoes/editar/$ordem->codigo"); ?>" class="btn btn-dark btn-sm text-secondary">Alterar data de vencimento</a>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
         <?php endif; ?>
       </div>
 
@@ -200,13 +214,13 @@
 
 <script>
   $(document).ready(function() {
-    $("#btn-enviar-email").on('click', function () { 
-      $("#divPrincipalDetalhes").LoadingOverlay("show",{
+    $("#btn-enviar-email").on('click', function() {
+      $("#divPrincipalDetalhes").LoadingOverlay("show", {
         image: "",
-        text:"Enviando e-mail...",
-        fontawesome : "fa fa-paper-plane",
+        text: "Enviando e-mail...",
+        fontawesome: "fa fa-paper-plane",
       });
-     });
+    });
   });
 </script>
 
