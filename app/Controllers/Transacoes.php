@@ -131,5 +131,15 @@ class Transacoes extends BaseController
         $objetoOperacao = new Operacoes($ordem);
 
         $objetoOperacao->alteraVencimentoTransacao();
+
+        if(isset($ordem->erro_transacao)){
+            $retorno['erro'] = 'Por favor verifique os erros abaixo e tente novamente';
+            $retorno['erros_model'] = ['data_vencimento'=> $ordem->erro_transacao];
+
+            return $this->response->setJSON($retorno);
+        }
+
+        session()->setFlashdata('sucesso', 'Nova data de vencimento definida com sucesso!');
+        return $this->response->setJSON($retorno);
     }
 }

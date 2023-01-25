@@ -178,8 +178,23 @@ class Operacoes
 
       $charge = $api->updateBillet($params, $body);
 
-      echo '<pre>';
-      print_r($charge);
+      if($charge['code'] != 200){
+        $this->ordem->erro_transacao = $charge['error_description'];
+
+        return $this->ordem;
+      }
+
+      $this->transacaoModel->save($this->ordem->transacao);
+
+      //Criação do evento
+      $dias = $this->ordem->defineDataVencimentoEvento($this->ordem->transacao->expire_at);
+
+      $this->eventoModel->atualizaEvento('ordem_id', $this->ordem->id, $dias); 
+      
+      $this->marcarOrdemComoAtualizada();
+      
+      return $this->ordem;
+
     } catch (GerencianetException $e) {
       echo '<pre>';
       print_r($e->code);
@@ -191,5 +206,12 @@ class Operacoes
       echo '<pre>';
       print_r($e->getMessage());
     }
+  }
+
+  private function marcarOrdemComoAtualizada()
+  {
+    unset($this->ordem->transacao);
+    $this->ordem->atualizado_em = date('Y-m-d H:i:s');
+    $this->ordemModel->protect(false)->save($this->ordem);
   }
 }
