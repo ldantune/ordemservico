@@ -122,8 +122,7 @@ class Transacoes extends BaseController
             return $this->response->setJSON($retorno);
         }
 
-        if($post['data_vencimento'] < substr($transacao->expire_at, 0, 10)){
-
+        if($post['data_vencimento'] < substr($transacao->expire_at, 0, 10)){ 
             $retorno['erro'] = 'Por favor verifique os erros abaixo e tente novamente';
             $retorno['erros_model'] = ['data_vencimento'=> "Não é possível antecipar a data de vencimento do boleto"];
 
@@ -243,5 +242,34 @@ class Transacoes extends BaseController
         return redirect()->back()
                     ->with('transacao', '')
                     ->with('sucesso', "Boleto reenviado com sucesso!");
+    }
+
+    public function consultar(string $codigo = null){
+
+        $ordem = $this->ordemModel->buscaOrdemOu404($codigo);
+
+        $transacao = $this->transacaoModel->where('ordem_id', $ordem->id)->first();
+
+        if($transacao === null){
+            return redirect()->back()
+                            ->with('transacao', '')
+                            ->with('atencao', "Não encontramos uma transação associada à ordem de serviço $codigo");
+        }
+
+        $ordem->transacao = $transacao;
+
+        $objetoOperacao = new Operacoes($ordem);
+
+        $objetoOperacao->consultarTransacao();
+
+        if(isset($ordem->erro_transacao)){
+
+            return redirect()->back()
+                    ->with('transacao', '')
+                    ->with('atencao', ['erro_transacao'=> $ordem->erro_transacao]);
+        }
+        return redirect()->back()
+                    ->with('transacao', '')
+                    ->with('sucesso', "Transação consultada com sucesso! <br> <br><b>Histórico</b> " .$ordem->formataTextoHistorico());
     }
 }

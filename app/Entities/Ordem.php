@@ -70,4 +70,16 @@ class Ordem extends Entity
 
         return ($info->getExtension() != 'pdf' ? true : false);
     }
+
+    public function formataTextoHistorico(){
+        $textoHistorico = '<ul>';
+
+        foreach($this->historico as $evento){
+            $textoHistorico .= '<li>Evento: ' .$evento['message']. '<br>Data: ' . date('d/m/y H:i:s', strtotime($evento['created_at'])) . '</li>';
+        }
+        
+        $textoHistorico .= '</ul>';
+
+        return $textoHistorico;
+    }
 }

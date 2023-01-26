@@ -276,6 +276,41 @@ class Operacoes
     }
   }
 
+  public function consultarTransacao()
+  {
+
+    // $charge_id refere-se ao ID da transação ("charge_id")
+    $params = [
+      'id' => $this->ordem->transacao->charge_id
+    ];
+
+    
+
+    try {
+      $api = new Gerencianet($this->options);
+      $charge = $api->detailCharge($params, []);
+
+      if ($charge['code'] != 200) {
+        $this->ordem->erro_transacao = $charge['error_description'];
+
+        return $this->ordem;
+      }
+       $this->ordem->historico = $charge['data']['history'];
+
+       return $this->ordem;
+      
+    } catch (GerencianetException $e) {
+      print_r($e->code);
+      print_r($e->error);
+      print_r($e->errorDescription);
+    } catch (\Exception $e) {
+      print_r($e->getMessage());
+    }
+  }
+
+
+
+
   private function marcarOrdemComoAtualizada()
   {
     unset($this->ordem->transacao);

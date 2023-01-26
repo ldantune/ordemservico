@@ -181,6 +181,18 @@
                   </div>
                 </div>
               </div>
+              <div class="col-sm-4">
+                <div class="card border-secondary">
+                  <div class="card-body">
+                      <h5 class="card-title">
+                        Histórico da transação
+                      </h5>
+                      <p class="card-text">Possibilita consultar todos os eventos que s transação gerou..</p>
+                      <a href="<?php echo site_url("transacoes/consultar/$ordem->codigo"); ?>" class="btn-get-gerencianet btn btn-dark btn-sm text-secondary">Consultar Transação</a>
+                  </div>
+                </div>
+              </div>
+              
             </div>
           </div>
         <?php endif; ?>
