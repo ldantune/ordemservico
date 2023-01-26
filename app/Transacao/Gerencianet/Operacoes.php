@@ -61,7 +61,7 @@ class Operacoes
     $customer = [
       'name' => $this->ordem->nome, // nome do cliente
       'cpf' => str_replace(['.', '-'], '', $this->ordem->cpf), // cpf válido do cliente
-      'phone_number' => str_replace(['(', ')', ' ', '-'], '', $this->ordem->telefone), // telefone do cliente
+      //'phone_number' => str_replace(['(', ')', ' ', '-'], '', $this->ordem->telefone), // telefone do cliente
       'email' => $this->ordem->email,
     ];
 
@@ -178,7 +178,7 @@ class Operacoes
 
       $charge = $api->updateBillet($params, $body);
 
-      if($charge['code'] != 200){
+      if ($charge['code'] != 200) {
         $this->ordem->erro_transacao = $charge['error_description'];
 
         return $this->ordem;
@@ -189,12 +189,11 @@ class Operacoes
       //Criação do evento
       $dias = $this->ordem->defineDataVencimentoEvento($this->ordem->transacao->expire_at);
 
-      $this->eventoModel->atualizaEvento('ordem_id', $this->ordem->id, $dias); 
-      
-      $this->marcarOrdemComoAtualizada();
-      
-      return $this->ordem;
+      $this->eventoModel->atualizaEvento('ordem_id', $this->ordem->id, $dias);
 
+      $this->marcarOrdemComoAtualizada();
+
+      return $this->ordem;
     } catch (GerencianetException $e) {
       echo '<pre>';
       print_r($e->code);
@@ -204,6 +203,44 @@ class Operacoes
       print_r($e->errorDescription);
     } catch (\Exception $e) {
       echo '<pre>';
+      print_r($e->getMessage());
+    }
+  }
+
+  public function cancelarTransacao()
+  {
+    // $charge_id refere-se ao ID da transação ("charge_id")
+    $params = [
+      'id' => $this->ordem->transacao->charge_id
+    ];
+
+    try {
+      $api = new Gerencianet($this->options);
+      $charge = $api->cancelCharge($params, []);
+
+      if ($charge['code'] != 200) {
+        $this->ordem->erro_transacao = $charge['error_description'];
+
+        return $this->ordem;
+      }
+
+
+
+      $this->ordem->transacao->status = 'canceled';
+      $this->transacaoModel->save($this->ordem->transacao);
+
+      $this->ordem->situacao = 'cancelada';
+      $this->ordemModel->save($this->ordem);
+
+      $this->eventoModel->where('ordem_id', $this->ordem->id)->delete();
+
+      return $this->ordem;
+
+    } catch (GerencianetException $e) {
+      print_r($e->code);
+      print_r($e->error);
+      print_r($e->errorDescription);
+    } catch (\Exception $e) {
       print_r($e->getMessage());
     }
   }

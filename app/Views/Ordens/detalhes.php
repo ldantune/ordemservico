@@ -159,6 +159,17 @@
                   </div>
                 </div>
               </div>
+              <div class="col-sm-4">
+                <div class="card border-secondary">
+                  <div class="card-body">
+                      <h5 class="card-title">
+                        Cancelar boleto
+                      </h5>
+                      <p class="card-text">Possibilita o cancelamento do Boleto bancário se a ordem estiver com status de aguardando ou Não paga.</p>
+                      <a href="<?php echo site_url("transacoes/cancelar/$ordem->codigo"); ?>" class="btn-get-gerencianet btn btn-dark btn-sm text-secondary">Cancelar boleto</a>
+                  </div>
+                </div>
+              </div>
             </div>
           </div>
         <?php endif; ?>
@@ -219,6 +230,14 @@
         image: "",
         text: "Enviando e-mail...",
         fontawesome: "fa fa-paper-plane",
+      });
+    });
+
+    $(".btn-get-gerencianet").on('click', function() {
+      $("#divPrincipalDetalhes").LoadingOverlay("show", {
+        image: "",
+        text: "Processando...",
+        fontawesome: "fa fa-hourglass-half",
       });
     });
   });

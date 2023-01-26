@@ -142,4 +142,46 @@ class Transacoes extends BaseController
         session()->setFlashdata('sucesso', 'Nova data de vencimento definida com sucesso!');
         return $this->response->setJSON($retorno);
     }
+
+    public function cancelar(string $codigo = null)
+    {
+        $ordem = $this->ordemModel->buscaOrdemOu404($codigo);
+
+        $transacao = $this->transacaoModel->where('ordem_id', $ordem->id)->first();
+
+        if($transacao === null){
+            return redirect()->back()
+                            ->with('transacao', '')
+                            ->with('atencao', "Não encontramos uma transação associada à ordem de serviço $codigo");
+        }
+
+        $statusAceitos = [
+            'new',
+            'waiting',
+            'unpaid',
+        ];
+
+        if(!in_array($transacao->status, $statusAceitos)){
+            return redirect()->back()
+                            ->with('transacao', '')
+                            ->with('atencao', "Apenas, transações com status [ Aguardando ] ou [ Não paga] podem ser cancelados");
+        }
+
+        $ordem->transacao = $transacao;
+
+        $objetoOperacao = new Operacoes($ordem);
+
+        $objetoOperacao->cancelarTransacao();
+
+        if(isset($ordem->erro_transacao)){
+
+            return redirect()->back()
+                    ->with('transacao', '')
+                    ->with('atencao', ['erro_transacao'=> $ordem->erro_transacao]);
+        }
+
+        return redirect()->back()
+                    ->with('transacao', '')
+                    ->with('sucesso', "Boleto cancelado com sucesso!");
+    }
 }
