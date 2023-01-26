@@ -23,6 +23,12 @@ class Transacoes extends BaseController
     {
         $ordem = $this->ordemModel->buscaOrdemOu404($codigo);
 
+        if($ordem->situacao === 'encerrada'){
+            return redirect()->back()
+                        ->with('transacao', '')
+                        ->with('atencao', "Está ordem já encontra-se encerrada $codigo");
+        }
+
         $transacao = $this->transacaoModel->where('ordem_id', $ordem->id)->first();
 
         if($transacao === null){
@@ -147,6 +153,12 @@ class Transacoes extends BaseController
     {
         $ordem = $this->ordemModel->buscaOrdemOu404($codigo);
 
+        if($ordem->situacao === 'encerrada'){
+            return redirect()->back()
+                        ->with('transacao', '')
+                        ->with('atencao', "Está ordem já encontra-se encerrada $codigo");
+        }
+
         $transacao = $this->transacaoModel->where('ordem_id', $ordem->id)->first();
 
         if($transacao === null){
@@ -183,5 +195,53 @@ class Transacoes extends BaseController
         return redirect()->back()
                     ->with('transacao', '')
                     ->with('sucesso', "Boleto cancelado com sucesso!");
+    }
+
+    public function reenviar(string $codigo = null){
+
+        $ordem = $this->ordemModel->buscaOrdemOu404($codigo);
+
+        if($ordem->situacao === 'encerrada'){
+            return redirect()->back()
+                        ->with('transacao', '')
+                        ->with('atencao', "Está ordem já encontra-se encerrada $codigo");
+        }
+
+        $transacao = $this->transacaoModel->where('ordem_id', $ordem->id)->first();
+
+        if($transacao === null){
+            return redirect()->back()
+                            ->with('transacao', '')
+                            ->with('atencao', "Não encontramos uma transação associada à ordem de serviço $codigo");
+        }
+
+        $statusAceitos = [
+            'new',
+            'waiting',
+            'unpaid',
+        ];
+
+        if(!in_array($transacao->status, $statusAceitos)){
+            return redirect()->back()
+                            ->with('transacao', '')
+                            ->with('atencao', "Apenas, transações com status [ Aguardando ] ou [ Não paga] podem ser cancelados");
+        }
+
+        $ordem->transacao = $transacao;
+
+        $objetoOperacao = new Operacoes($ordem);
+
+        $objetoOperacao->reenviarBoleto();
+
+        if(isset($ordem->erro_transacao)){
+
+            return redirect()->back()
+                    ->with('transacao', '')
+                    ->with('atencao', ['erro_transacao'=> $ordem->erro_transacao]);
+        }
+
+        return redirect()->back()
+                    ->with('transacao', '')
+                    ->with('sucesso', "Boleto reenviado com sucesso!");
     }
 }

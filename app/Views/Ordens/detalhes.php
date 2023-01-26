@@ -170,6 +170,17 @@
                   </div>
                 </div>
               </div>
+              <div class="col-sm-4">
+                <div class="card border-secondary">
+                  <div class="card-body">
+                      <h5 class="card-title">
+                        Reenviar boleto
+                      </h5>
+                      <p class="card-text">Possibilita o reenvio do Boleto bancário se a ordem estiver com status de aguardando ou Não paga.</p>
+                      <a href="<?php echo site_url("transacoes/reenviar/$ordem->codigo"); ?>" class="btn-get-gerencianet btn btn-dark btn-sm text-secondary">Reenviar boleto</a>
+                  </div>
+                </div>
+              </div>
             </div>
           </div>
         <?php endif; ?>

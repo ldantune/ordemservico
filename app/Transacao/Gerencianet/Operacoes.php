@@ -235,7 +235,38 @@ class Operacoes
       $this->eventoModel->where('ordem_id', $this->ordem->id)->delete();
 
       return $this->ordem;
+    } catch (GerencianetException $e) {
+      print_r($e->code);
+      print_r($e->error);
+      print_r($e->errorDescription);
+    } catch (\Exception $e) {
+      print_r($e->getMessage());
+    }
+  }
 
+  public function reenviarBoleto()
+  {
+
+    // $charge_id refere-se ao ID da transação ("charge_id")
+    $params = [
+      'id' => $this->ordem->transacao->charge_id
+    ];
+
+    $body = [
+      'email' => $this->ordem->email
+    ];
+
+    try {
+      $api = new Gerencianet($this->options);
+      $charge = $api->resendBillet($params, $body);
+
+      if ($charge['code'] != 200) {
+        $this->ordem->erro_transacao = $charge['error_description'];
+
+        return $this->ordem;
+      }
+      return $this->ordem;
+      
     } catch (GerencianetException $e) {
       print_r($e->code);
       print_r($e->error);
