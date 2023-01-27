@@ -95,4 +95,31 @@ trait OrdemTrait
     
     return $ordem;
   }
+
+  public function gerenciaEstoqueProduto(object $ordem)
+  {
+    $produtos = [];
+
+    $ordem->itens = unserialize($ordem->itens);
+
+    foreach($ordem->itens as $item){
+      if($item->tipo === 'produto'){
+        if($item->controla_estoque == true){
+
+          array_push($produtos, [
+            'id' => $item->id,
+            'quantidade' => (int) $item->item_quantidade
+          ]);
+
+        }
+      }
+    }
+
+    if(!empty($produtos)){
+
+      $itemModel = new \App\Models\ItemModel();
+
+      $itemModel->realizaBaixaNoEstoqueDeProdutos($produtos);
+    }
+  }
 }

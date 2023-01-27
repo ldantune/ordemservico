@@ -272,4 +272,52 @@ class Transacoes extends BaseController
                     ->with('transacao', '')
                     ->with('sucesso', "Transação consultada com sucesso! <br> <br><b>Histórico</b> " .$ordem->formataTextoHistorico());
     }
+
+    public function pagar(string $codigo = null)
+    {
+        $ordem = $this->ordemModel->buscaOrdemOu404($codigo);
+
+        if($ordem->situacao === 'encerrada'){
+            return redirect()->back()
+                        ->with('transacao', '')
+                        ->with('atencao', "Está ordem já encontra-se encerrada $codigo");
+        }
+
+        $transacao = $this->transacaoModel->where('ordem_id', $ordem->id)->first();
+
+        if($transacao === null){
+            return redirect()->back()
+                            ->with('transacao', '')
+                            ->with('atencao', "Não encontramos uma transação associada à ordem de serviço $codigo");
+        }
+
+        $statusAceitos = [
+            'new',
+            'waiting',
+            'unpaid',
+        ];
+
+        if(!in_array($transacao->status, $statusAceitos)){
+            return redirect()->back()
+                            ->with('transacao', '')
+                            ->with('atencao', "Apenas, transações com status [ Aguardando ] ou [ Não paga] podem ser cancelados");
+        }
+
+        $ordem->transacao = $transacao;
+
+        $objetoOperacao = new Operacoes($ordem);
+
+        $objetoOperacao->marcarComoPago();
+
+        if(isset($ordem->erro_transacao)){
+
+            return redirect()->back()
+                    ->with('transacao', '')
+                    ->with('atencao', ['erro_transacao'=> $ordem->erro_transacao]);
+        }
+
+        return redirect()->back()
+                    ->with('transacao', '')
+                    ->with('sucesso', "Boleto marcado como pago com sucesso!");
+    }
 }

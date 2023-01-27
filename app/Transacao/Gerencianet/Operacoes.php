@@ -308,6 +308,42 @@ class Operacoes
     }
   }
 
+  public function marcarComoPago()
+  {
+
+    // $charge_id refere-se ao ID da transação ("charge_id")
+    $params = [
+      'id' => $this->ordem->transacao->charge_id
+    ];
+
+    
+
+    try {
+      $api = new Gerencianet($this->options);
+      $charge = $api->settleCharge($params, []);
+
+
+      if ($charge['code'] != 200) {
+        $this->ordem->erro_transacao = $charge['error_description'];
+
+        return $this->ordem;
+      }
+
+      $this->ordem->transacao->status = 'settled';
+
+      $this->encerrarOrdemServico();
+      
+      return $this->ordem;
+      
+    } catch (GerencianetException $e) {
+      print_r($e->code);
+      print_r($e->error);
+      print_r($e->errorDescription);
+    } catch (\Exception $e) {
+      print_r($e->getMessage());
+    }
+  }
+
 
 
 
@@ -316,5 +352,18 @@ class Operacoes
     unset($this->ordem->transacao);
     $this->ordem->atualizado_em = date('Y-m-d H:i:s');
     $this->ordemModel->protect(false)->save($this->ordem);
+  }
+
+  private function encerrarOrdemServico(){
+
+    $this->transacaoModel->save($this->ordem->transacao);
+
+    $this->ordem->situacao = 'encerrada';
+
+    $this->ordemModel->save($this->ordem);
+
+    $this->gerenciaEstoqueProduto($this->ordem);
+
+    $this->eventoModel->where('ordem_id', $this->ordem->id)->delete();
   }
 }

@@ -192,6 +192,17 @@
                   </div>
                 </div>
               </div>
+              <div class="col-sm-4">
+                <div class="card border-secondary">
+                  <div class="card-body">
+                      <h5 class="card-title">
+                        Marcar boleto como pago
+                      </h5>
+                      <p class="card-text">Permite marcar como pago (baixa manual) uma determinada transação / boleto.</p>
+                      <a href="<?php echo site_url("transacoes/pagar/$ordem->codigo"); ?>" class="btn-get-gerencianet btn btn-dark btn-sm text-secondary">Marcar como pago</a>
+                  </div>
+                </div>
+              </div>
               
             </div>
           </div>
