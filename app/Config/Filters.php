@@ -37,7 +37,7 @@ class Filters extends BaseConfig
     public $globals = [
         'before' => [
             // 'honeypot',
-            'csrf',
+            'csrf' => ['except' => 'transacoes/notificacoes'],
             // 'invalidchars',
         ],
         'after' => [
@@ -86,7 +86,12 @@ class Filters extends BaseConfig
                 'formas(/*)?',
                 'ordens(/*)?',
                 'ordensitens(/*)?',
-                'transacoes(/*)?',
+                'ordensevidencias(/*)?',
+                'transacoes/editar',
+                'transacoes/atualizar',
+                'transacoes/cancelar',
+                'transacoes/consultar',
+                'transacoes/pagar',
             ]
         ],
         'visitante' => [

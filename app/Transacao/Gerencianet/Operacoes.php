@@ -55,7 +55,7 @@ class Operacoes
     }
 
     //TODO: Url de notificações
-    $urlNotificacoes = null;
+    $urlNotificacoes = 'https://eo64fq5651r4abx.m.pipedream.net';
     $metadata = array('notification_url' => $urlNotificacoes);
 
     $customer = [
@@ -266,7 +266,6 @@ class Operacoes
         return $this->ordem;
       }
       return $this->ordem;
-      
     } catch (GerencianetException $e) {
       print_r($e->code);
       print_r($e->error);
@@ -284,7 +283,7 @@ class Operacoes
       'id' => $this->ordem->transacao->charge_id
     ];
 
-    
+
 
     try {
       $api = new Gerencianet($this->options);
@@ -295,10 +294,9 @@ class Operacoes
 
         return $this->ordem;
       }
-       $this->ordem->historico = $charge['data']['history'];
+      $this->ordem->historico = $charge['data']['history'];
 
-       return $this->ordem;
-      
+      return $this->ordem;
     } catch (GerencianetException $e) {
       print_r($e->code);
       print_r($e->error);
@@ -316,7 +314,7 @@ class Operacoes
       'id' => $this->ordem->transacao->charge_id
     ];
 
-    
+
 
     try {
       $api = new Gerencianet($this->options);
@@ -332,9 +330,86 @@ class Operacoes
       $this->ordem->transacao->status = 'settled';
 
       $this->encerrarOrdemServico();
-      
+
       return $this->ordem;
-      
+    } catch (GerencianetException $e) {
+      print_r($e->code);
+      print_r($e->error);
+      print_r($e->errorDescription);
+    } catch (\Exception $e) {
+      print_r($e->getMessage());
+    }
+  }
+
+  public function consultaNotificacao(string $tokenNotificacao)
+  {
+
+    $params = [
+      'token' => $tokenNotificacao
+    ];
+
+    try {
+      $api = new Gerencianet($this->options);
+      $chargeNotification = $api->getNotification($params, []);
+      // Para identificar o status atual da sua transação você deverá contar o número de situações contidas no array, pois a última posição guarda sempre o último status. Veja na um modelo de respostas na seção "Exemplos de respostas" abaixo.
+
+      // Veja abaixo como acessar o ID e a String referente ao último status da transação.
+
+      // Conta o tamanho do array data (que armazena o resultado)
+      $i = count($chargeNotification["data"]);
+      // Pega o último Object chargeStatus
+      $ultimoStatus = $chargeNotification["data"][$i - 1];
+      // Acessando o array Status
+      $status = $ultimoStatus["status"];
+      // Obtendo o ID da transação        
+      $charge_id = $ultimoStatus["identifiers"]["charge_id"];
+      // Obtendo a String do status atual
+      $statusAtual = $status["current"];
+
+      $transacao = $this->transacaoModel->where('charge_id', $charge_id)->first();
+
+      if ($transacao != null) {
+        $transacao->status = $statusAtual;
+
+        if ($transacao->hasChanged()) {
+
+          $this->ordem = $this->ordemModel->find($transacao->ordem_id);
+
+          if ($this->ordem != null) {
+
+            $this->ordem->transacao = $transacao;
+
+            if ($this->ordem->transacao->status === 'canceled') {
+
+              $this->ordem->situacao = 'cancelada';
+
+              $this->ordemModel->save($this->ordem);
+
+              $this->transacaoModel->save($transacao);
+
+              $this->eventoModel->where('ordem_id', $this->ordem->id)->delete();
+            }
+
+            if ($this->ordem->transacao->status === 'paid') {
+              $this->encerrarOrdemServico();
+            }
+
+            if ($this->ordem->transacao->status === 'unpaid') {
+              echo 'Ordem não paga';
+              $this->ordem->situacao = 'nao_pago';
+
+              $this->ordemModel->save($this->ordem);
+
+              $this->transacaoModel->save($transacao);
+            }
+
+            if ($this->ordem->transacao->status === 'settled') {
+
+              $this->encerrarOrdemServico();
+            }
+          }
+        }
+      }
     } catch (GerencianetException $e) {
       print_r($e->code);
       print_r($e->error);
@@ -345,8 +420,6 @@ class Operacoes
   }
 
 
-
-
   private function marcarOrdemComoAtualizada()
   {
     unset($this->ordem->transacao);
@@ -354,7 +427,8 @@ class Operacoes
     $this->ordemModel->protect(false)->save($this->ordem);
   }
 
-  private function encerrarOrdemServico(){
+  private function encerrarOrdemServico()
+  {
 
     $this->transacaoModel->save($this->ordem->transacao);
 

@@ -23,24 +23,24 @@ class Transacoes extends BaseController
     {
         $ordem = $this->ordemModel->buscaOrdemOu404($codigo);
 
-        if($ordem->situacao === 'encerrada'){
+        if ($ordem->situacao === 'encerrada') {
             return redirect()->back()
-                        ->with('transacao', '')
-                        ->with('atencao', "Está ordem já encontra-se encerrada $codigo");
+                ->with('transacao', '')
+                ->with('atencao', "Está ordem já encontra-se encerrada $codigo");
         }
 
         $transacao = $this->transacaoModel->where('ordem_id', $ordem->id)->first();
 
-        if($transacao === null){
+        if ($transacao === null) {
             return redirect()->back()
-                            ->with('transacao', '')
-                            ->with('atencao', "Não encontramos uma transação associada à ordem de serviço $codigo");
+                ->with('transacao', '')
+                ->with('atencao', "Não encontramos uma transação associada à ordem de serviço $codigo");
         }
 
-        if($transacao->status === 'canceled'){
+        if ($transacao->status === 'canceled') {
             return redirect()->back()
-                            ->with('transacao', '')
-                            ->with('atencao', "Apenas, transações com status [ Aguardando ] ou [ Não paga] podem ser atualizadas");
+                ->with('transacao', '')
+                ->with('atencao', "Apenas, transações com status [ Aguardando ] ou [ Não paga] podem ser atualizadas");
         }
 
         $ordem->transacao = $transacao;
@@ -88,9 +88,9 @@ class Transacoes extends BaseController
             return $this->response->setJSON($retorno);
         }
 
-        if($post['data_vencimento'] < date('Y-m-d')){
+        if ($post['data_vencimento'] < date('Y-m-d')) {
             $retorno['erro'] = 'Por favor verifique os erros abaixo e tente novamente';
-            $retorno['erros_model'] = ['data_vencimento'=> 'A data de vencimento não pode ser menor que a data atual'];
+            $retorno['erros_model'] = ['data_vencimento' => 'A data de vencimento não pode ser menor que a data atual'];
 
             return $this->response->setJSON($retorno);
         }
@@ -99,32 +99,32 @@ class Transacoes extends BaseController
 
         $transacao = $this->transacaoModel->where('ordem_id', $ordem->id)->first();
 
-        if($transacao === null){
+        if ($transacao === null) {
             $retorno['erro'] = 'Por favor verifique os erros abaixo e tente novamente';
-            $retorno['erros_model'] = ['data_vencimento'=> "Não encontramos uma transação associada à ordem de serviço $ordem->codigo"];
+            $retorno['erros_model'] = ['data_vencimento' => "Não encontramos uma transação associada à ordem de serviço $ordem->codigo"];
 
             return $this->response->setJSON($retorno);
         }
 
-        if($transacao->status === 'paid'){
+        if ($transacao->status === 'paid') {
 
             $retorno['erro'] = 'Por favor verifique os erros abaixo e tente novamente';
-            $retorno['erros_model'] = ['data_vencimento'=> "Só é possível editar a data de vencimento de uma ordem que ainda não foi paga. No momento ela está " . $ordem->exibeSituacao()];
+            $retorno['erros_model'] = ['data_vencimento' => "Só é possível editar a data de vencimento de uma ordem que ainda não foi paga. No momento ela está " . $ordem->exibeSituacao()];
 
             return $this->response->setJSON($retorno);
         }
 
-        if($post['data_vencimento'] ===  $transacao->expire_at){
+        if ($post['data_vencimento'] ===  $transacao->expire_at) {
 
             $retorno['erro'] = 'Por favor verifique os erros abaixo e tente novamente';
-            $retorno['erros_model'] = ['data_vencimento'=> "A nova data de vencimento não pode igual a data de vencimento atual"];
+            $retorno['erros_model'] = ['data_vencimento' => "A nova data de vencimento não pode igual a data de vencimento atual"];
 
             return $this->response->setJSON($retorno);
         }
 
-        if($post['data_vencimento'] < substr($transacao->expire_at, 0, 10)){ 
+        if ($post['data_vencimento'] < substr($transacao->expire_at, 0, 10)) {
             $retorno['erro'] = 'Por favor verifique os erros abaixo e tente novamente';
-            $retorno['erros_model'] = ['data_vencimento'=> "Não é possível antecipar a data de vencimento do boleto"];
+            $retorno['erros_model'] = ['data_vencimento' => "Não é possível antecipar a data de vencimento do boleto"];
 
             return $this->response->setJSON($retorno);
         }
@@ -137,9 +137,9 @@ class Transacoes extends BaseController
 
         $objetoOperacao->alteraVencimentoTransacao();
 
-        if(isset($ordem->erro_transacao)){
+        if (isset($ordem->erro_transacao)) {
             $retorno['erro'] = 'Por favor verifique os erros abaixo e tente novamente';
-            $retorno['erros_model'] = ['data_vencimento'=> $ordem->erro_transacao];
+            $retorno['erros_model'] = ['data_vencimento' => $ordem->erro_transacao];
 
             return $this->response->setJSON($retorno);
         }
@@ -152,18 +152,18 @@ class Transacoes extends BaseController
     {
         $ordem = $this->ordemModel->buscaOrdemOu404($codigo);
 
-        if($ordem->situacao === 'encerrada'){
+        if ($ordem->situacao === 'encerrada') {
             return redirect()->back()
-                        ->with('transacao', '')
-                        ->with('atencao', "Está ordem já encontra-se encerrada $codigo");
+                ->with('transacao', '')
+                ->with('atencao', "Está ordem já encontra-se encerrada $codigo");
         }
 
         $transacao = $this->transacaoModel->where('ordem_id', $ordem->id)->first();
 
-        if($transacao === null){
+        if ($transacao === null) {
             return redirect()->back()
-                            ->with('transacao', '')
-                            ->with('atencao', "Não encontramos uma transação associada à ordem de serviço $codigo");
+                ->with('transacao', '')
+                ->with('atencao', "Não encontramos uma transação associada à ordem de serviço $codigo");
         }
 
         $statusAceitos = [
@@ -172,10 +172,10 @@ class Transacoes extends BaseController
             'unpaid',
         ];
 
-        if(!in_array($transacao->status, $statusAceitos)){
+        if (!in_array($transacao->status, $statusAceitos)) {
             return redirect()->back()
-                            ->with('transacao', '')
-                            ->with('atencao', "Apenas, transações com status [ Aguardando ] ou [ Não paga] podem ser cancelados");
+                ->with('transacao', '')
+                ->with('atencao', "Apenas, transações com status [ Aguardando ] ou [ Não paga] podem ser cancelados");
         }
 
         $ordem->transacao = $transacao;
@@ -184,34 +184,35 @@ class Transacoes extends BaseController
 
         $objetoOperacao->cancelarTransacao();
 
-        if(isset($ordem->erro_transacao)){
+        if (isset($ordem->erro_transacao)) {
 
             return redirect()->back()
-                    ->with('transacao', '')
-                    ->with('atencao', ['erro_transacao'=> $ordem->erro_transacao]);
+                ->with('transacao', '')
+                ->with('atencao', ['erro_transacao' => $ordem->erro_transacao]);
         }
 
         return redirect()->back()
-                    ->with('transacao', '')
-                    ->with('sucesso', "Boleto cancelado com sucesso!");
+            ->with('transacao', '')
+            ->with('sucesso', "Boleto cancelado com sucesso!");
     }
 
-    public function reenviar(string $codigo = null){
+    public function reenviar(string $codigo = null)
+    {
 
         $ordem = $this->ordemModel->buscaOrdemOu404($codigo);
 
-        if($ordem->situacao === 'encerrada'){
+        if ($ordem->situacao === 'encerrada') {
             return redirect()->back()
-                        ->with('transacao', '')
-                        ->with('atencao', "Está ordem já encontra-se encerrada $codigo");
+                ->with('transacao', '')
+                ->with('atencao', "Está ordem já encontra-se encerrada $codigo");
         }
 
         $transacao = $this->transacaoModel->where('ordem_id', $ordem->id)->first();
 
-        if($transacao === null){
+        if ($transacao === null) {
             return redirect()->back()
-                            ->with('transacao', '')
-                            ->with('atencao', "Não encontramos uma transação associada à ordem de serviço $codigo");
+                ->with('transacao', '')
+                ->with('atencao', "Não encontramos uma transação associada à ordem de serviço $codigo");
         }
 
         $statusAceitos = [
@@ -220,10 +221,10 @@ class Transacoes extends BaseController
             'unpaid',
         ];
 
-        if(!in_array($transacao->status, $statusAceitos)){
+        if (!in_array($transacao->status, $statusAceitos)) {
             return redirect()->back()
-                            ->with('transacao', '')
-                            ->with('atencao', "Apenas, transações com status [ Aguardando ] ou [ Não paga] podem ser cancelados");
+                ->with('transacao', '')
+                ->with('atencao', "Apenas, transações com status [ Aguardando ] ou [ Não paga] podem ser cancelados");
         }
 
         $ordem->transacao = $transacao;
@@ -232,28 +233,29 @@ class Transacoes extends BaseController
 
         $objetoOperacao->reenviarBoleto();
 
-        if(isset($ordem->erro_transacao)){
+        if (isset($ordem->erro_transacao)) {
 
             return redirect()->back()
-                    ->with('transacao', '')
-                    ->with('atencao', ['erro_transacao'=> $ordem->erro_transacao]);
+                ->with('transacao', '')
+                ->with('atencao', ['erro_transacao' => $ordem->erro_transacao]);
         }
 
         return redirect()->back()
-                    ->with('transacao', '')
-                    ->with('sucesso', "Boleto reenviado com sucesso!");
+            ->with('transacao', '')
+            ->with('sucesso', "Boleto reenviado com sucesso!");
     }
 
-    public function consultar(string $codigo = null){
+    public function consultar(string $codigo = null)
+    {
 
         $ordem = $this->ordemModel->buscaOrdemOu404($codigo);
 
         $transacao = $this->transacaoModel->where('ordem_id', $ordem->id)->first();
 
-        if($transacao === null){
+        if ($transacao === null) {
             return redirect()->back()
-                            ->with('transacao', '')
-                            ->with('atencao', "Não encontramos uma transação associada à ordem de serviço $codigo");
+                ->with('transacao', '')
+                ->with('atencao', "Não encontramos uma transação associada à ordem de serviço $codigo");
         }
 
         $ordem->transacao = $transacao;
@@ -262,33 +264,33 @@ class Transacoes extends BaseController
 
         $objetoOperacao->consultarTransacao();
 
-        if(isset($ordem->erro_transacao)){
+        if (isset($ordem->erro_transacao)) {
 
             return redirect()->back()
-                    ->with('transacao', '')
-                    ->with('atencao', ['erro_transacao'=> $ordem->erro_transacao]);
+                ->with('transacao', '')
+                ->with('atencao', ['erro_transacao' => $ordem->erro_transacao]);
         }
         return redirect()->back()
-                    ->with('transacao', '')
-                    ->with('sucesso', "Transação consultada com sucesso! <br> <br><b>Histórico</b> " .$ordem->formataTextoHistorico());
+            ->with('transacao', '')
+            ->with('sucesso', "Transação consultada com sucesso! <br> <br><b>Histórico</b> " . $ordem->formataTextoHistorico());
     }
 
     public function pagar(string $codigo = null)
     {
         $ordem = $this->ordemModel->buscaOrdemOu404($codigo);
 
-        if($ordem->situacao === 'encerrada'){
+        if ($ordem->situacao === 'encerrada') {
             return redirect()->back()
-                        ->with('transacao', '')
-                        ->with('atencao', "Está ordem já encontra-se encerrada $codigo");
+                ->with('transacao', '')
+                ->with('atencao', "Está ordem já encontra-se encerrada $codigo");
         }
 
         $transacao = $this->transacaoModel->where('ordem_id', $ordem->id)->first();
 
-        if($transacao === null){
+        if ($transacao === null) {
             return redirect()->back()
-                            ->with('transacao', '')
-                            ->with('atencao', "Não encontramos uma transação associada à ordem de serviço $codigo");
+                ->with('transacao', '')
+                ->with('atencao', "Não encontramos uma transação associada à ordem de serviço $codigo");
         }
 
         $statusAceitos = [
@@ -297,10 +299,10 @@ class Transacoes extends BaseController
             'unpaid',
         ];
 
-        if(!in_array($transacao->status, $statusAceitos)){
+        if (!in_array($transacao->status, $statusAceitos)) {
             return redirect()->back()
-                            ->with('transacao', '')
-                            ->with('atencao', "Apenas, transações com status [ Aguardando ] ou [ Não paga] podem ser cancelados");
+                ->with('transacao', '')
+                ->with('atencao', "Apenas, transações com status [ Aguardando ] ou [ Não paga] podem ser cancelados");
         }
 
         $ordem->transacao = $transacao;
@@ -309,15 +311,39 @@ class Transacoes extends BaseController
 
         $objetoOperacao->marcarComoPago();
 
-        if(isset($ordem->erro_transacao)){
+        if (isset($ordem->erro_transacao)) {
 
             return redirect()->back()
-                    ->with('transacao', '')
-                    ->with('atencao', ['erro_transacao'=> $ordem->erro_transacao]);
+                ->with('transacao', '')
+                ->with('atencao', ['erro_transacao' => $ordem->erro_transacao]);
         }
 
         return redirect()->back()
-                    ->with('transacao', '')
-                    ->with('sucesso', "Boleto marcado como pago com sucesso!");
+            ->with('transacao', '')
+            ->with('sucesso', "Boleto marcado como pago com sucesso!");
+    }
+
+    public function notificacoes()
+    {
+
+        if ($this->request->getMethod() !== 'post') {
+            return $this->response->setStatusCode(400, 'Método inválido');
+        }
+
+        $tokenNotificacao = trim($this->request->getPost('notification'));
+
+        if ($tokenNotificacao == null || empty($tokenNotificacao)) {
+
+            return $this->response->setStatusCode(400, 'Token de notificação inválido');
+        }
+
+        $objetoOperacao = new Operacoes();
+
+        $objetoOperacao->consultaNotificacao($tokenNotificacao);
+
+        if ($tokenNotificacao == null || empty($tokenNotificacao)) {
+
+            return $this->response->setStatusCode(200, 'Notificação recebida e tratada');
+        }
     }
 }
