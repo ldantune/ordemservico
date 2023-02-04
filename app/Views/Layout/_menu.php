@@ -16,6 +16,16 @@
   <li class="<?php echo (url_is('clientes*') ? 'active' : '') ?>"><a href="<?php echo site_url('clientes') ?>"> <i class="fa fa-users"></i>Clientes </a></li>
 
   <li class="<?php echo (url_is('grupos*') ? 'active' : '') ?>"><a href="<?php echo site_url('grupos') ?>"> <i class="icon-settings"></i>Grupos & Permissões </a></li>
+
+  <li class="<?php echo (url_is('relatorios*') ? 'active' : '') ?>"><a href="#exampledropdownDropdown" aria-expanded="false" data-toggle="collapse"> <i class="icon-windows"></i>Relatórios </a>
+    <ul id="exampledropdownDropdown" class="collapse list-unstyled ">
+      <li><a href="<?php echo site_url('relatorios/itens') ?>">Itens</a></li>
+      <li><a href="<?php echo site_url('relatorios/ordens') ?>">Ordens de serviço</a></li>
+      <li><a href="<?php echo site_url('relatorios/contas') ?>">Contas de fornecedores</a></li>
+      <li><a href="<?php echo site_url('relatorios/equipe') ?>">Desempenho da equipe</a></li>
+    </ul>
+  </li>
+
   <li><a href="charts.html"> <i class="fa fa-bar-chart"></i>Charts </a></li>
   <li><a href="forms.html"> <i class="icon-padnote"></i>Forms </a></li>
   <li><a href="#exampledropdownDropdown" aria-expanded="false" data-toggle="collapse"> <i class="icon-windows"></i>Example dropdown </a>

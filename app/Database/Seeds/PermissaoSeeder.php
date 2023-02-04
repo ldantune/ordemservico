@@ -11,18 +11,34 @@ class PermissaoSeeder extends Seeder
         $permissaoModel = new \App\Models\PermissaoModel();
 
         $permissoes = [
+            // [
+            //     'nome' => 'listar-usuarios',
+            // ],
+            // [
+            //     'nome' => 'criar-usuarios',
+            // ],
+            // [
+            //     'nome' => 'editar-usuarios',
+            // ],
+            // [
+            //     'nome' => 'excluir-usuarios',
+            // ],
             [
-                'nome' => 'listar-usuarios',
+                'nome' => 'listar-ordens',
             ],
             [
-                'nome' => 'criar-usuarios',
+                'nome' => 'criar-ordens',
             ],
             [
-                'nome' => 'editar-usuarios',
+                'nome' => 'editar-ordens',
             ],
             [
-                'nome' => 'excluir-usuarios',
+                'nome' => 'excluir-ordens',
             ],
+            [
+                'nome' => 'encerrar-ordens',
+            ],
+            
         ];
 
         foreach($permissoes as $permissao){

@@ -86,6 +86,7 @@ class Filters extends BaseConfig
                 'formas(/*)?',
                 'ordens(/*)?',
                 'ordensitens(/*)?',
+                'relatorios(/*)?',
                 'ordensevidencias(/*)?',
                 'transacoes/editar',
                 'transacoes/atualizar',

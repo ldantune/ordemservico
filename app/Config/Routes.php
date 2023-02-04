@@ -95,6 +95,14 @@ $routes->group('ordensevidencias', function($routes) {
     $routes->add('removerevidencia/(:segment)', 'OrdensEvidencias::removerEvidencia/$1');
 });
 
+
+$routes->group('relatorios', function($routes) {
+
+    $routes->add('itens', 'Relatorios::itens');
+    $routes->add('produtos-com-estoque-zerado-negativo', 'Relatorios::gerarRelatorioProdutosEstoqueZerado');
+
+    
+});
 /*
  * --------------------------------------------------------------------
  * Additional Routing
