@@ -98,10 +98,15 @@ $routes->group('ordensevidencias', function($routes) {
 
 $routes->group('relatorios', function($routes) {
 
+    //Itens
     $routes->add('itens', 'Relatorios::itens');
     $routes->add('produtos-com-estoque-zerado-negativo', 'Relatorios::gerarRelatorioProdutosEstoqueZerado');
     $routes->add('itens-mais-vendidos', 'Relatorios::gerarRelatorioItensMaisVendidos');
     $routes->add('itensmaisvendidos', 'Relatorios::ItensMaisVendidos');
+
+    //Ordens
+    $routes->add('ordens', 'Relatorios::ordens');
+    $routes->add('gerarrelatorioordens', 'Relatorios::gerarRelatorioOrdens');
 
     
 });

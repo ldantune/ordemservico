@@ -151,4 +151,15 @@ class Relatorios extends BaseController
         unset($data);
         unset($dompdf);
     }
+
+    //-------------Ordens ----------//
+
+    public function ordens()
+    {
+        $data = [
+            'titulo' => 'Relatórios de ordens de serviços',
+        ];
+
+        return view('Relatorios/Ordens/ordens', $data);
+    }
 }
