@@ -14,7 +14,8 @@ class OrdemItemModel extends Model
         'item_quantidade'
     ];
 
-    public function recuperaItensDaOrdem(int $ordem_id){
+    public function recuperaItensDaOrdem(int $ordem_id)
+    {
 
         $atributos = [
             'itens.id',
@@ -34,10 +35,38 @@ class OrdemItemModel extends Model
                     ->findAll();
     }
 
-    public function atualizarQuantidadeItem(object $ordemItem) {
+    public function atualizarQuantidadeItem(object $ordemItem) 
+    {
         
         return $this->set('item_quantidade', $ordemItem->item_quantidade)
                     ->where('id', $ordemItem->id)
                     ->update();
+    }
+
+    public function recuperaItensMaisVendidos(string $tipo, string $dataInicial, string $dataFinal)
+    {
+
+        $atributos = [
+            'itens.nome',
+            'itens.codigo_interno',
+            'itens.tipo',
+            'SUM(ordens_itens.item_quantidade) AS quantidade',
+        ];
+
+        $dataInicial = str_replace('T', ' ', $dataInicial);
+        $dataFinal = str_replace('T', ' ', $dataFinal);
+
+        $where = 'ordens.atualizado_em  BETWEEN "' .$dataInicial . '" AND "' .$dataFinal . '"';
+
+        return $this->select($atributos)
+                    ->join('itens', 'itens.id = ordens_itens.item_id')
+                    ->join('ordens', 'ordens.id = ordens_itens.ordem_id')
+                    ->where($where)
+                    ->where('itens.tipo', $tipo)
+                    ->where('ordens.situacao', 'encerrada')
+                    ->groupBy('itens.nome')
+                    ->orderBy('quantidade', 'DESC')
+                    //->builder->getCompiledSelect();
+                    ->findAll();
     }
 }

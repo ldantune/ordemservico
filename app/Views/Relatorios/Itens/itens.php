@@ -43,11 +43,12 @@
           </h2>
         </div>
         <div id="collapseTwo" class="collapse" aria-labelledby="headingTwo" data-parent="#accordionExample">
+          <?php echo form_open('/', ['id' => 'form']); ?>
           <div class="card-body">
-            Possibilita a geração de relatório em PDF dos itens que foram mais vendidos, 
+            Possibilita a geração de relatório em PDF dos itens que foram mais vendidos,
             tendo em mente que serão conteplados apenas as Ordens de Serviço que estejam com status de Encerrada.
 
-            <?php echo form_open('/', ['id' => 'form']); ?>
+
 
             <div id="response">
 
@@ -73,14 +74,15 @@
               </div>
             </div>
 
-            <?php echo form_close(); ?>
+
           </div>
           <div class="card-footer">
-            <input value="Gerar Relatório" class="btn btn-dark btn-sm text-secondary" target="_blank">
+            <input id="btn-mais-vendidos" type="submit" value="Gerar Relatório" class="btn btn-dark btn-sm text-secondary">
           </div>
+          <?php echo form_close(); ?>
         </div>
       </div>
-      
+
     </div>
   </div>
 </div>
@@ -89,5 +91,63 @@
 
 
 <?php echo $this->section('scripts') ?>
+
+<script>
+  $(document).ready(function() {
+    $("#form").on('submit', function(e) {
+      e.preventDefault();
+      $.ajax({
+        type: 'POST',
+        url: '<?php echo site_url('relatorios/itensmaisvendidos'); ?>',
+        data: new FormData(this),
+        dataType: 'json',
+        contentType: false,
+        cache: false,
+        processData: false,
+        beforeSend: function() {
+          $("#response").html('');
+          $("#btn-mais-vendidos").val('Por favor aguarde...');
+        },
+        success: function(response) {
+
+          $("#btn-mais-vendidos").val('Gerar Relatório');
+          $("#btn-mais-vendidos").removeAttr("disabled");
+          $('[name=csrf_ordem]').val(response.token);
+
+          if (!response.erro) {
+            if (response.info) {
+              $("#response").html('<div class="alert alert-info" role="alert">' + response.info + '</div>');
+            } else {
+
+              var url = "<?php echo site_url(); ?>" + response.redirect;
+
+              var win = window.open(url, '_blank');
+              win.focus();
+
+            }
+          }
+
+          if (response.erro) {
+            $("#response").html('<div class="alert alert-danger" role="alert">' + response.erro + '</div>');
+            if (response.erros_model) {
+              $.each(response.erros_model, function(key, value) {
+                $("#response").append('<ul class="list-unstyled"><li class="text-danger">' + value + '</li></ul>');
+              });
+            }
+          }
+        },
+        error: function() {
+          alert('Não foi possível processar a solicitação. Por favor entre em contato com suporte técnico.');
+          $("#btn-mais-vendidos").val('Gerar Relatório');
+          $("#btn-mais-vendidos").removeAttr("disabled");
+        }
+      });
+    });
+
+    $("#form").submit(function() {
+      $(this).find(":submit").attr('disabled', 'disabled');
+    })
+  });
+</script>
 
 <?php echo $this->endSection() ?>
