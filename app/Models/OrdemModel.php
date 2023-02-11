@@ -144,4 +144,72 @@ class OrdemModel extends Model
 
         return $codigo;
     }
+
+    public function recuperaOrdensPelaSituacao(string $situacao, string $dataInicial, string $dataFinal)
+    {
+        switch ($situacao) {
+            case 'aberta':
+                $campoDate = 'criado_em';
+                break;
+            case 'encerrada':
+            case 'aguardando':
+            case 'cancelada':
+            case 'nao_pago':
+                $campoDate = 'atualizado_em';
+                break;
+            case 'excluida':
+                $campoDate = 'deletado_em';
+                break;
+        }
+
+        $dataInicial = str_replace('T', ' ', $dataInicial);
+        $dataFinal = str_replace('T', ' ', $dataFinal);
+
+        $where = 'ordens.'.$campoDate.'  BETWEEN "' .$dataInicial . '" AND "' .$dataFinal . '"';
+
+        $atributos = [
+            'ordens.codigo',
+            'ordens.situacao',
+            'ordens.valor_ordem',
+            'ordens.criado_em',
+            'ordens.atualizado_em',
+            'ordens.deletado_em',
+            'clientes.nome',
+            'clientes.cpf',
+        ];
+
+        return $this->select($atributos)
+                    ->join('clientes', 'clientes.id = ordens.cliente_id')
+                    ->where('situacao', $situacao)
+                    ->where($where)
+                    ->orderBy('situacao', 'ASC')
+                    //->builder->getCompiledSelect();
+                    ->findAll();
+    }
+
+    public function recuperaOrdensComBoleto(string $dataInicial, string $dataFinal)
+    {
+        $dataInicial = str_replace('T', ' ', $dataInicial);
+        $dataFinal = str_replace('T', ' ', $dataFinal);
+
+        
+        $atributos = [
+            'ordens.codigo',
+            'ordens.situacao',
+            'ordens.valor_ordem',
+            'transacoes.charge_id',
+            'transacoes.expire_at',
+        ];
+        
+        $where = 'ordens.atualizado_em  BETWEEN "' .$dataInicial . '" AND "' .$dataFinal . '"';
+
+        return $this->select($atributos)
+                    ->join('transacoes', 'transacoes.ordem_id = ordens.id')
+                    ->where($where)
+                    ->withDeleted(true)
+                    ->orderBy('situacao', 'ASC')
+                    ->groupBy('ordens.codigo')
+                    //->builder->getCompiledSelect();
+                    ->findAll();
+    }
 }

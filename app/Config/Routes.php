@@ -107,6 +107,13 @@ $routes->group('relatorios', function($routes) {
     //Ordens
     $routes->add('ordens', 'Relatorios::ordens');
     $routes->add('gerarrelatorioordens', 'Relatorios::gerarRelatorioOrdens');
+    $routes->add('ordens-abertas', 'Relatorios::exibeRelatorioOrdens');
+    $routes->add('ordens-encerradas', 'Relatorios::exibeRelatorioOrdens');
+    $routes->add('ordens-excluidas', 'Relatorios::exibeRelatorioOrdens');
+    $routes->add('ordens-canceladas', 'Relatorios::exibeRelatorioOrdens');
+    $routes->add('ordens-aguardando-pagamento', 'Relatorios::exibeRelatorioOrdens');
+    $routes->add('ordens-nao-pagas', 'Relatorios::exibeRelatorioOrdens');
+    $routes->add('ordens-com-boleto', 'Relatorios::exibeRelatorioOrdens');
 
     
 });

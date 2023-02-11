@@ -162,4 +162,161 @@ class Relatorios extends BaseController
 
         return view('Relatorios/Ordens/ordens', $data);
     }
+
+    public function gerarRelatorioOrdens(){
+          
+        if (!$this->request->isAJAX()) {
+            return redirect()->back();
+        }
+
+        // Envio o hash do token do form
+        $retorno['token'] = csrf_hash();
+
+        $validacao = service('validation');
+
+        $regras = [
+            'situacao' => 'required|in_list[aberta,encerrada,aguardando,cancelada,nao_pago,boleto,excluida]',
+            'data_inicial' => 'required',
+            'data_final' => 'required',
+        ];
+
+        $mensagens = [   // Errors
+            'situacao' => [
+                'required' => 'Por favor escolha uma situação de item',
+            ],
+            'data_inicial' => [
+                'required' => 'Por favor informe a data inicial de busca'
+            ],
+            'data_final' => [
+                'required' => 'Por favor informe a data final de busca'
+            ]
+        ];
+
+        $validacao->setRules($regras, $mensagens);
+
+        if ($validacao->withRequest($this->request)->run() == false) {
+
+            $retorno['erro'] = 'Por favor verifique os erros abaixo e tente novamente';
+            $retorno['erros_model'] = $validacao->getErrors();
+
+            return $this->response->setJSON($retorno);
+        }
+
+        $post = $this->request->getPost();
+
+        $dataInicial = strtotime($post['data_inicial']);
+        $dataFinal = strtotime($post['data_final']);
+
+        if($dataInicial > $dataFinal){
+            $retorno['erro'] = 'Por favor verifique os erros abaixo e tente novamente';
+            $retorno['erros_model'] = ['datas' => 'A Data Inicial não pode ser menor que a Data Final'];
+
+            return $this->response->setJSON($retorno);
+        }
+
+        session()->remove('ordens');
+        session()->remove('post');
+
+        if($post['situacao'] === 'aberta'){
+
+            $ordens = $this->ordemModel->recuperaOrdensPelaSituacao($post['situacao'], $post['data_inicial'], $post['data_final']);
+            
+            $retorno['redirect'] = 'relatorios/ordens-abertas';
+
+            $post['situacao'] = 'Abertas';
+            $post['viewRelatorio'] = 'relatorio_ordens_abertas';
+
+            session()->set('ordens', $ordens);
+            session()->set('post', $post);
+
+            return $this->response->setJSON($retorno); 
+        }
+
+        if($post['situacao'] === 'encerrada'){
+
+            $ordens = $this->ordemModel->recuperaOrdensPelaSituacao($post['situacao'], $post['data_inicial'], $post['data_final']);
+            echo '<pre>';
+            print_r($ordens);
+            exit;
+        }
+
+        if($post['situacao'] === 'excluida'){
+
+            $ordens = $this->ordemModel->recuperaOrdensPelaSituacao($post['situacao'], $post['data_inicial'], $post['data_final']);
+            echo '<pre>';
+            print_r($ordens);
+            exit;
+        }
+
+        if($post['situacao'] === 'aguardando'){
+
+            $ordens = $this->ordemModel->recuperaOrdensPelaSituacao($post['situacao'], $post['data_inicial'], $post['data_final']);
+            echo '<pre>';
+            print_r($ordens);
+            exit;
+        }
+
+        if($post['situacao'] === 'cancelada'){
+
+            $ordens = $this->ordemModel->recuperaOrdensPelaSituacao($post['situacao'], $post['data_inicial'], $post['data_final']);
+            echo '<pre>';
+            print_r($ordens);
+            exit;
+        }
+
+        if($post['situacao'] === 'nao_pago'){
+
+            $ordens = $this->ordemModel->recuperaOrdensPelaSituacao($post['situacao'], $post['data_inicial'], $post['data_final']);
+            echo '<pre>';
+            print_r($ordens);
+            exit;
+        }
+
+        if($post['situacao'] === 'boleto'){
+
+            $ordens = $this->ordemModel->recuperaOrdensComBoleto($post['data_inicial'], $post['data_final']);
+            echo '<pre>';
+            print_r($ordens);
+            exit;
+        }
+
+        echo '<pre>';
+        print_r($post);
+        exit;
+    }
+
+    public function exibeRelatorioOrdens(){
+        
+        //TODO: COLOCAR ACL AQUI;
+
+        if(!session()->has('ordens') || !session()->has('post')){
+            return redirect()->to(site_url('relatorios/ordens'))->with('atencao', 'Não foi possível gerar o relatório. Tente novamente');
+        }
+
+        $ordens = session()->get('ordens');
+        $post = session()->get('post');
+
+        
+        $data = [
+            'titulo' => 'Relatório de ordens ' . plural(ucfirst($post['situacao'])).', gerado em: '.date('d/m/Y H:i'),
+            'ordens' => $ordens,
+            'periodo' => 'Compreendendo o período entre ' .date('d/m/Y H:i', strtotime($post['data_inicial'])). ' e ' .date('d/m/Y H:i', strtotime($post['data_final'])),
+        ];
+
+        $viewRelatorio = $post['viewRelatorio'];
+
+        $view = view("relatorios/Ordens/$viewRelatorio", $data);
+
+        $nomeArquivo = 'relatorio-ordens'.$post['situacao'].'.pdf';
+
+        $dompdf = new Dompdf();
+        
+        $dompdf->loadHtml($view);
+        $dompdf->setPaper('A4', 'landscape');
+        $dompdf->render();
+        $dompdf->stream($nomeArquivo, ['Attachment' => false]);
+
+        unset($data);
+        unset($dompdf);
+    }
 }
