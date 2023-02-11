@@ -20,6 +20,10 @@ class Itens extends BaseController
 
     public function index()
     {
+        if(!$this->usuarioLogado()->temPermissaoPara('listar-itens')){
+            return redirect()->back()->with('atencao', $this->usuarioLogado()->nome. ', você não tem permissão para acessar esse menu.');
+        }
+
         $data = [
             'titulo' => 'Listando os itens da base de dados'
         ];
@@ -70,6 +74,10 @@ class Itens extends BaseController
 
     public function exibir(int $id = null)
     {
+        if(!$this->usuarioLogado()->temPermissaoPara('listar-itens')){
+            return redirect()->back()->with('atencao', $this->usuarioLogado()->nome. ', você não tem permissão para acessar esse menu.');
+        }
+
         $item  = $this->buscaItemOu404($id);
 
         $this->defineHistoricoItem($item);
@@ -97,9 +105,11 @@ class Itens extends BaseController
 
     public function criar()
     {
-        $item  = new Item();
+        if(!$this->usuarioLogado()->temPermissaoPara('criar-itens')){
+            return redirect()->back()->with('atencao', $this->usuarioLogado()->nome. ', você não tem permissão para acessar esse menu.');
+        }
 
-        //dd($grupo);
+        $item  = new Item();
 
         $data = [
             'titulo' => "Cadastrando novo item",
@@ -174,6 +184,10 @@ class Itens extends BaseController
 
     public function editar(int $id = null)
     {
+        if(!$this->usuarioLogado()->temPermissaoPara('editar-itens')){
+            return redirect()->back()->with('atencao', $this->usuarioLogado()->nome. ', você não tem permissão para acessar esse menu.');
+        }
+
         $item  = $this->buscaItemOu404($id);
 
         $data = [
@@ -241,6 +255,10 @@ class Itens extends BaseController
 
     public function codigoBarras(int $id = null)
     {
+        if(!$this->usuarioLogado()->temPermissaoPara('listar-itens')){
+            return redirect()->back()->with('atencao', $this->usuarioLogado()->nome. ', você não tem permissão para acessar esse menu.');
+        }
+
         $item = $this->buscaItemOu404($id);
 
         $generator = new \Picqer\Barcode\BarcodeGeneratorSVG();
@@ -256,6 +274,10 @@ class Itens extends BaseController
 
     public function editarImagem(int $id = null)
     {
+        if(!$this->usuarioLogado()->temPermissaoPara('editar-itens')){
+            return redirect()->back()->with('atencao', $this->usuarioLogado()->nome. ', você não tem permissão para acessar esse menu.');
+        }
+
         $item = $this->buscaItemOu404($id);
 
         if ($item->tipo === 'serviço') {
@@ -369,6 +391,9 @@ class Itens extends BaseController
 
     public function removeImagem(string $imagem = null)
     {
+        if(!$this->usuarioLogado()->temPermissaoPara('editar-itens')){
+            return redirect()->back()->with('atencao', $this->usuarioLogado()->nome. ', você não tem permissão para acessar esse menu.');
+        }
 
         if ($this->request->getMethod() === 'post') {
 
@@ -390,6 +415,9 @@ class Itens extends BaseController
 
     public function excluir(int $id = null)
     {
+        if(!$this->usuarioLogado()->temPermissaoPara('excluir-itens')){
+            return redirect()->back()->with('atencao', $this->usuarioLogado()->nome. ', você não tem permissão para acessar esse menu.');
+        }
 
         $item = $this->buscaItemOu404($id);
 
@@ -425,6 +453,10 @@ class Itens extends BaseController
 
     public function desfazerExclusao(int $id = null)
     {
+        if(!$this->usuarioLogado()->temPermissaoPara('editar-itens')){
+            return redirect()->back()->with('atencao', $this->usuarioLogado()->nome. ', você não tem permissão para acessar esse menu.');
+        }
+
         $item  = $this->buscaItemOu404($id);
 
         if ($item->deletado_em == null) {

@@ -20,6 +20,10 @@ class Grupos extends BaseController
 
     public function index()
     {
+        if(!$this->usuarioLogado()->temPermissaoPara('listar-grupos')){
+            return redirect()->back()->with('atencao', $this->usuarioLogado()->nome. ', você não tem permissão para acessar esse menu.');
+        }
+
         $data = [
             'titulo' => 'Listando os grupos de acesso ao sistema',
         ];
@@ -64,6 +68,10 @@ class Grupos extends BaseController
 
     public function exibir(int $id = null)
     {
+        if(!$this->usuarioLogado()->temPermissaoPara('listar-grupos')){
+            return redirect()->back()->with('atencao', $this->usuarioLogado()->nome. ', você não tem permissão para acessar esse menu.');
+        }
+
         $grupo  = $this->buscaGrupoOu404($id);
 
         $data = [
@@ -76,8 +84,11 @@ class Grupos extends BaseController
 
     public function criar()
     {
-        $grupo  = new Grupo();
+        if(!$this->usuarioLogado()->temPermissaoPara('criar-grupos')){
+            return redirect()->back()->with('atencao', $this->usuarioLogado()->nome. ', você não tem permissão para acessar esse menu.');
+        }
 
+        $grupo  = new Grupo();
         //dd($grupo);
 
         $data = [
@@ -119,6 +130,10 @@ class Grupos extends BaseController
 
     public function editar(int $id = null)
     {
+        if(!$this->usuarioLogado()->temPermissaoPara('editar-grupos')){
+            return redirect()->back()->with('atencao', $this->usuarioLogado()->nome. ', você não tem permissão para acessar esse menu.');
+        }
+
         $grupo  = $this->buscaGrupoOu404($id);
 
         if($grupo->id < 3){
@@ -184,6 +199,10 @@ class Grupos extends BaseController
 
     public function excluir(int $id = null)
     {
+        if(!$this->usuarioLogado()->temPermissaoPara('excluir-grupos')){
+            return redirect()->back()->with('atencao', $this->usuarioLogado()->nome. ', você não tem permissão para acessar esse menu.');
+        }
+
         $grupo  = $this->buscaGrupoOu404($id);
 
         if($grupo->id < 3){
@@ -213,6 +232,10 @@ class Grupos extends BaseController
 
     public function desfazerexclusao(int $id = null)
     {
+        if(!$this->usuarioLogado()->temPermissaoPara('editar-grupos')){
+            return redirect()->back()->with('atencao', $this->usuarioLogado()->nome. ', você não tem permissão para acessar esse menu.');
+        }
+
         $grupo  = $this->buscaGrupoOu404($id);
 
         if($grupo->deletado_em == null){
@@ -229,6 +252,10 @@ class Grupos extends BaseController
 
     public function permissoes(int $id = null)
     {
+        if(!$this->usuarioLogado()->temPermissaoPara('editar-grupos')){
+            return redirect()->back()->with('atencao', $this->usuarioLogado()->nome. ', você não tem permissão para acessar esse menu.');
+        }
+
         $grupo  = $this->buscaGrupoOu404($id);
 
         if($grupo->id == getenv('GRUPO_ADMINISTRADOR')){
@@ -305,9 +332,12 @@ class Grupos extends BaseController
         return $this->response->setJSON($retorno);
     }
 
-    public function removepermissao(int $principal_id = null){
+    public function removepermissao(int $principal_id = null)
+    {
 
-
+        if(!$this->usuarioLogado()->temPermissaoPara('editar-grupos')){
+            return redirect()->back()->with('atencao', $this->usuarioLogado()->nome. ', você não tem permissão para acessar esse menu.');
+        }
 
         if ($this->request->getMethod() === 'post') {
 

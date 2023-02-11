@@ -24,6 +24,10 @@ class Relatorios extends BaseController
 
     public function itens()
     {
+        if(!$this->usuarioLogado()->temPermissaoPara('visualizar-relatorios')){
+            return redirect()->back()->with('atencao', $this->usuarioLogado()->nome. ', você não tem permissão para acessar esse menu.');
+        }
+
         $data = [
             'titulo' => 'Relatórios de itens',
         ];
@@ -34,7 +38,9 @@ class Relatorios extends BaseController
     public function GerarRelatorioProdutosEstoqueZerado()
     {
 
-        //TODO COLOCAR ACL AQUI
+        if(!$this->usuarioLogado()->temPermissaoPara('visualizar-relatorios')){
+            return redirect()->back()->with('atencao', $this->usuarioLogado()->nome. ', você não tem permissão para acessar esse menu.');
+        }
 
         $produtos = $this->itemModel
             ->where('tipo', 'produto')
@@ -125,7 +131,9 @@ class Relatorios extends BaseController
     public function gerarRelatorioItensMaisVendidos()
     {
 
-        //TODO: COLOCAR ACL AQUI;
+        if(!$this->usuarioLogado()->temPermissaoPara('visualizar-relatorios')){
+            return redirect()->back()->with('atencao', $this->usuarioLogado()->nome. ', você não tem permissão para acessar esse menu.');
+        }
 
         if (!session()->has('itens') || !session()->has('post')) {
             return redirect()->to(site_url('relatorios/itens'))->with('atencao', 'Não foi possível gerar o relatório. Tente novamente');
@@ -158,6 +166,10 @@ class Relatorios extends BaseController
 
     public function ordens()
     {
+        if(!$this->usuarioLogado()->temPermissaoPara('visualizar-relatorios')){
+            return redirect()->back()->with('atencao', $this->usuarioLogado()->nome. ', você não tem permissão para acessar esse menu.');
+        }
+
         $data = [
             'titulo' => 'Relatórios de ordens de serviços',
         ];
@@ -326,7 +338,10 @@ class Relatorios extends BaseController
 
     public function exibeRelatorioOrdens()
     {
-        //TODO: COLOCAR ACL AQUI;
+        if(!$this->usuarioLogado()->temPermissaoPara('visualizar-relatorios')){
+            return redirect()->back()->with('atencao', $this->usuarioLogado()->nome. ', você não tem permissão para acessar esse menu.');
+        }
+
         if (!session()->has('ordens') || !session()->has('post')) {
             return redirect()->to(site_url('relatorios/ordens'))->with('atencao', 'Não foi possível gerar o relatório. Tente novamente');
         }
@@ -362,6 +377,10 @@ class Relatorios extends BaseController
 
     public function contas()
     {
+        if(!$this->usuarioLogado()->temPermissaoPara('visualizar-relatorios')){
+            return redirect()->back()->with('atencao', $this->usuarioLogado()->nome. ', você não tem permissão para acessar esse menu.');
+        }
+
         $data = [
             'titulo' => 'Relatórios de contas de fornecedores',
         ];
@@ -489,7 +508,10 @@ class Relatorios extends BaseController
 
     public function exibeRelatorioContas()
     {
-        //TODO: COLOCAR ACL AQUI;
+        if(!$this->usuarioLogado()->temPermissaoPara('visualizar-relatorios')){
+            return redirect()->back()->with('atencao', $this->usuarioLogado()->nome. ', você não tem permissão para acessar esse menu.');
+        }
+
         if (!session()->has('contas') || !session()->has('post')) {
             return redirect()->to(site_url('relatorios/contas'))->with('atencao', 'Não foi possível gerar o relatório. Tente novamente');
         }
@@ -526,6 +548,10 @@ class Relatorios extends BaseController
 
     public function equipe()
     {
+        if(!$this->usuarioLogado()->temPermissaoPara('visualizar-relatorios')){
+            return redirect()->back()->with('atencao', $this->usuarioLogado()->nome. ', você não tem permissão para acessar esse menu.');
+        }
+
         $data = [
             'titulo' => 'Relatórios de desempenho da equipe',
         ];
@@ -620,7 +646,10 @@ class Relatorios extends BaseController
 
     public function exibeRelatorioEquipe()
     {
-        //TODO: COLOCAR ACL AQUI;
+        if(!$this->usuarioLogado()->temPermissaoPara('visualizar-relatorios')){
+            return redirect()->back()->with('atencao', $this->usuarioLogado()->nome. ', você não tem permissão para acessar esse menu.');
+        }
+        
         if (!session()->has('usuarios') || !session()->has('post')) {
             return redirect()->to(site_url('relatorios/equipe'))->with('atencao', 'Não foi possível gerar o relatório. Tente novamente');
         }

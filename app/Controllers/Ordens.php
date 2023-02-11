@@ -37,6 +37,10 @@ class Ordens extends BaseController
 
     public function index()
     {
+        if(!$this->usuarioLogado()->temPermissaoPara('listar-ordens')){
+            return redirect()->back()->with('atencao', $this->usuarioLogado()->nome. ', você não tem permissão para acessar esse menu.');
+        }
+
         $data = [
             'titulo' => 'Listando as ordens de serviços'
         ];
@@ -73,6 +77,10 @@ class Ordens extends BaseController
 
     public function criar()
     {
+        if(!$this->usuarioLogado()->temPermissaoPara('criar-ordens')){
+            return redirect()->back()->with('atencao', $this->usuarioLogado()->nome. ', você não tem permissão para acessar esse menu.');
+        }
+
         $ordem = new Ordem();
 
         $ordem->codigo = $this->ordemModel->geraCodigoInternoOrdem();
@@ -120,6 +128,9 @@ class Ordens extends BaseController
 
     public function detalhes(string $codigo = null)
     {
+        if(!$this->usuarioLogado()->temPermissaoPara('listar-ordens')){
+            return redirect()->back()->with('atencao', $this->usuarioLogado()->nome. ', você não tem permissão para acessar esse menu.');
+        }
 
         $ordem = $this->ordemModel->buscaOrdemOu404($codigo);
 
@@ -142,6 +153,9 @@ class Ordens extends BaseController
 
     public function editar(string $codigo = null)
     {
+        if(!$this->usuarioLogado()->temPermissaoPara('editar-ordens')){
+            return redirect()->back()->with('atencao', $this->usuarioLogado()->nome. ', você não tem permissão para acessar esse menu.');
+        }
 
         $ordem = $this->ordemModel->buscaOrdemOu404($codigo);
 
@@ -214,7 +228,9 @@ class Ordens extends BaseController
 
     public function excluir(string $codigo = null)
     {
-
+        if(!$this->usuarioLogado()->temPermissaoPara('excluir-ordens')){
+            return redirect()->back()->with('atencao', $this->usuarioLogado()->nome. ', você não tem permissão para acessar esse menu.');
+        }
         $ordem = $this->ordemModel->buscaOrdemOu404($codigo);
 
         if ($ordem->deletado_em != null) {
@@ -249,6 +265,10 @@ class Ordens extends BaseController
 
     public function desfazerExclusao(string $codigo = null)
     {
+        if(!$this->usuarioLogado()->temPermissaoPara('editar-ordens')){
+            return redirect()->back()->with('atencao', $this->usuarioLogado()->nome. ', você não tem permissão para acessar esse menu.');
+        }
+
         $ordem  = $this->ordemModel->buscaOrdemOu404($codigo);
 
         if ($ordem->deletado_em == null) {
@@ -292,6 +312,9 @@ class Ordens extends BaseController
 
     public function responsavel(string $codigo = null)
     {
+        if(!$this->usuarioLogado()->temPermissaoPara('editar-ordens')){
+            return redirect()->back()->with('atencao', $this->usuarioLogado()->nome. ', você não tem permissão para acessar esse menu.');
+        }
 
         $ordem = $this->ordemModel->buscaOrdemOu404($codigo);
 
@@ -396,6 +419,9 @@ class Ordens extends BaseController
 
     public function email(string $codigo = null)
     {
+        if(!$this->usuarioLogado()->temPermissaoPara('listar-ordens')){
+            return redirect()->back()->with('atencao', $this->usuarioLogado()->nome. ', você não tem permissão para acessar esse menu.');
+        }
 
         $ordem = $this->ordemModel->buscaOrdemOu404($codigo);
 
@@ -412,6 +438,9 @@ class Ordens extends BaseController
 
     public function gerarPdf(string $codigo = null)
     {
+        if(!$this->usuarioLogado()->temPermissaoPara('listar-ordens')){
+            return redirect()->back()->with('atencao', $this->usuarioLogado()->nome. ', você não tem permissão para acessar esse menu.');
+        }
 
         $ordem = $this->ordemModel->buscaOrdemOu404($codigo);
 
@@ -438,6 +467,9 @@ class Ordens extends BaseController
 
     public function encerrar(string $codigo = null)
     {
+        if(!$this->usuarioLogado()->temPermissaoPara('encerrar-ordens')){
+            return redirect()->back()->with('atencao', $this->usuarioLogado()->nome. ', você não tem permissão para acessar esse menu.');
+        }
 
         $ordem = $this->ordemModel->buscaOrdemOu404($codigo);
 

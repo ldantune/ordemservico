@@ -23,6 +23,10 @@ class Clientes extends BaseController
 
     public function index()
     {
+        if(!$this->usuarioLogado()->temPermissaoPara('listar-clientes')){
+            return redirect()->back()->with('atencao', $this->usuarioLogado()->nome. ', você não tem permissão para acessar esse menu.');
+        }
+
         $data = [
             'titulo' => 'Listando os clientes do sistema',
         ];
@@ -76,6 +80,10 @@ class Clientes extends BaseController
 
     public function exibir(int $id = null)
     {
+        if(!$this->usuarioLogado()->temPermissaoPara('listar-clientes')){
+            return redirect()->back()->with('atencao', $this->usuarioLogado()->nome. ', você não tem permissão para acessar esse menu.');
+        }
+
         $cliente  = $this->buscaClienteOu404($id);
 
         $data = [
@@ -89,6 +97,10 @@ class Clientes extends BaseController
 
     public function criar(int $id = null)
     {
+        if(!$this->usuarioLogado()->temPermissaoPara('criar-clientes')){
+            return redirect()->back()->with('atencao', $this->usuarioLogado()->nome. ', você não tem permissão para acessar esse menu.');
+        }
+
         $cliente  = new Cliente();
 
         $this->removeBlockCepEmailSessao();
@@ -156,6 +168,10 @@ class Clientes extends BaseController
 
     public function editar(int $id = null)
     {
+        if(!$this->usuarioLogado()->temPermissaoPara('editar-clientes')){
+            return redirect()->back()->with('atencao', $this->usuarioLogado()->nome. ', você não tem permissão para acessar esse menu.');
+        }
+
         $cliente  = $this->buscaClienteOu404($id);
 
         $this->removeBlockCepEmailSessao();
@@ -231,6 +247,10 @@ class Clientes extends BaseController
     public function excluir(int $id = null)
     {
 
+        if(!$this->usuarioLogado()->temPermissaoPara('excluir-clientes')){
+            return redirect()->back()->with('atencao', $this->usuarioLogado()->nome. ', você não tem permissão para acessar esse menu.');
+        }
+
         $cliente = $this->buscaClienteOu404($id);
 
         if ($cliente->deletado_em != null) {
@@ -255,6 +275,10 @@ class Clientes extends BaseController
 
     public function desfazerExclusao(int $id = null)
     {
+        if(!$this->usuarioLogado()->temPermissaoPara('editar-clientes')){
+            return redirect()->back()->with('atencao', $this->usuarioLogado()->nome. ', você não tem permissão para acessar esse menu.');
+        }
+
         $cliente  = $this->buscaClienteOu404($id);
 
         if ($cliente->deletado_em == null) {
@@ -293,6 +317,10 @@ class Clientes extends BaseController
 
     public function historico(int $id = null)
     {
+        if(!$this->usuarioLogado()->temPermissaoPara('listar-clientes')){
+            return redirect()->back()->with('atencao', $this->usuarioLogado()->nome. ', você não tem permissão para acessar esse menu.');
+        }
+
         $cliente  = $this->buscaClienteOu404($id);
 
         $data = [

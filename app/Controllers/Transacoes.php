@@ -21,6 +21,10 @@ class Transacoes extends BaseController
 
     public function editar(string $codigo = null)
     {
+        if(!$this->usuarioLogado()->temPermissaoPara('alterar-vencimento-transacao')){
+            return redirect()->back()->with('atencao', $this->usuarioLogado()->nome. ', você não tem permissão para acessar esse menu.');
+        }
+
         $ordem = $this->ordemModel->buscaOrdemOu404($codigo);
 
         if ($ordem->situacao === 'encerrada') {
@@ -150,6 +154,10 @@ class Transacoes extends BaseController
 
     public function cancelar(string $codigo = null)
     {
+        if(!$this->usuarioLogado()->temPermissaoPara('cancelar-transacao')){
+            return redirect()->back()->with('atencao', $this->usuarioLogado()->nome. ', você não tem permissão para acessar esse menu.');
+        }
+
         $ordem = $this->ordemModel->buscaOrdemOu404($codigo);
 
         if ($ordem->situacao === 'encerrada') {
@@ -198,6 +206,9 @@ class Transacoes extends BaseController
 
     public function reenviar(string $codigo = null)
     {
+        if(!$this->usuarioLogado()->temPermissaoPara('reenviar-boleto-transacao')){
+            return redirect()->back()->with('atencao', $this->usuarioLogado()->nome. ', você não tem permissão para acessar esse menu.');
+        }
 
         $ordem = $this->ordemModel->buscaOrdemOu404($codigo);
 
@@ -248,6 +259,10 @@ class Transacoes extends BaseController
     public function consultar(string $codigo = null)
     {
 
+        if(!$this->usuarioLogado()->temPermissaoPara('consultar-transacao')){
+            return redirect()->back()->with('atencao', $this->usuarioLogado()->nome. ', você não tem permissão para acessar esse menu.');
+        }
+
         $ordem = $this->ordemModel->buscaOrdemOu404($codigo);
 
         $transacao = $this->transacaoModel->where('ordem_id', $ordem->id)->first();
@@ -277,6 +292,10 @@ class Transacoes extends BaseController
 
     public function pagar(string $codigo = null)
     {
+        if(!$this->usuarioLogado()->temPermissaoPara('pagar-transacao')){
+            return redirect()->back()->with('atencao', $this->usuarioLogado()->nome. ', você não tem permissão para acessar esse menu.');
+        }
+
         $ordem = $this->ordemModel->buscaOrdemOu404($codigo);
 
         if ($ordem->situacao === 'encerrada') {

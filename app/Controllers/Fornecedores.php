@@ -19,6 +19,10 @@ class Fornecedores extends BaseController
     }
     public function index()
     {
+        if(!$this->usuarioLogado()->temPermissaoPara('listar-fornecedores')){
+            return redirect()->back()->with('atencao', $this->usuarioLogado()->nome. ', você não tem permissão para acessar esse menu.');
+        }
+
         $data = [
             'titulo' => 'Listando os fornedores do sistema',
         ];
@@ -67,9 +71,11 @@ class Fornecedores extends BaseController
 
     public function criar(int $id = null)
     {
+        if(!$this->usuarioLogado()->temPermissaoPara('criar-fornecedores')){
+            return redirect()->back()->with('atencao', $this->usuarioLogado()->nome. ', você não tem permissão para acessar esse menu.');
+        }
+
         $fornecedor  = new Fornecedor();
-
-
 
         $data = [
             'titulo' => "Cadastrar novo fornecedor ",
@@ -119,9 +125,11 @@ class Fornecedores extends BaseController
 
     public function exibir(int $id = null)
     {
+        if(!$this->usuarioLogado()->temPermissaoPara('listar-fornecedores')){
+            return redirect()->back()->with('atencao', $this->usuarioLogado()->nome. ', você não tem permissão para acessar esse menu.');
+        }
+
         $fornecedor  = $this->buscaFornecedorOu404($id);
-
-
 
         $data = [
             'titulo' => "Detalhando o fornecedor " . esc($fornecedor->razao),
@@ -134,9 +142,11 @@ class Fornecedores extends BaseController
 
     public function editar(int $id = null)
     {
+        if(!$this->usuarioLogado()->temPermissaoPara('editar-fornecedores')){
+            return redirect()->back()->with('atencao', $this->usuarioLogado()->nome. ', você não tem permissão para acessar esse menu.');
+        }
+
         $fornecedor  = $this->buscaFornecedorOu404($id);
-
-
 
         $data = [
             'titulo' => "Editando o fornecedor " . esc($fornecedor->razao),
@@ -192,6 +202,10 @@ class Fornecedores extends BaseController
     public function excluir(int $id = null)
     {
 
+        if(!$this->usuarioLogado()->temPermissaoPara('excluir-fornecedores')){
+            return redirect()->back()->with('atencao', $this->usuarioLogado()->nome. ', você não tem permissão para acessar esse menu.');
+        }
+
         $fornecedor = $this->buscaFornecedorOu404($id);
 
         if ($fornecedor->deletado_em != null) {
@@ -220,6 +234,10 @@ class Fornecedores extends BaseController
 
     public function desfazerExclusao(int $id = null)
     {
+        if(!$this->usuarioLogado()->temPermissaoPara('editar-fornecedores')){
+            return redirect()->back()->with('atencao', $this->usuarioLogado()->nome. ', você não tem permissão para acessar esse menu.');
+        }
+
         $fornecedor  = $this->buscaFornecedorOu404($id);
 
         if ($fornecedor->deletado_em == null) {
@@ -234,6 +252,10 @@ class Fornecedores extends BaseController
 
     public function notas(int $id = null)
     {
+        if(!$this->usuarioLogado()->temPermissaoPara('editar-fornecedores')){
+            return redirect()->back()->with('atencao', $this->usuarioLogado()->nome. ', você não tem permissão para acessar esse menu.');
+        }
+
         $fornecedor  = $this->buscaFornecedorOu404($id);
 
         $fornecedor->notas_fiscais = $this->fornecedorNotaFiscalModel
@@ -262,11 +284,6 @@ class Fornecedores extends BaseController
         $retorno['token'] = csrf_hash();
 
         $post = $this->request->getPost();
-
-        // [id] => 5001
-        // [valor_nota] => 283.00
-        // [data_emissao] => 2022-12-16
-        // [descricao_itens] => Realizando teste de nota fiscal
 
         $valorNota = str_replace([',','.'], '', $post['valor_nota']);
 
@@ -333,7 +350,8 @@ class Fornecedores extends BaseController
         return $this->response->setJSON($retorno);
     }
 
-    public function exibirNota(string $nota = null){
+    public function exibirNota(string $nota = null)
+    {
 
         if($nota == null){
             return redirect()->to(site_url("fornecedores"))->with('atencao', "Não encontramos a nota fiscal $nota");
@@ -343,7 +361,12 @@ class Fornecedores extends BaseController
 
     }
 
-    public function removeNota(string $nota_fiscal = null){
+    public function removeNota(string $nota_fiscal = null)
+    {
+        if(!$this->usuarioLogado()->temPermissaoPara('editar-fornecedores')){
+            return redirect()->back()->with('atencao', $this->usuarioLogado()->nome. ', você não tem permissão para acessar esse menu.');
+        } 
+        
         if($this->request->getMethod()=== 'post'){
 
             $objetoNota = $this->buscaNotaFiscalOu404($nota_fiscal);

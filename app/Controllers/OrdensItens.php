@@ -22,6 +22,10 @@ class OrdensItens extends BaseController
 
     public function itens(string $codigo = null)
     {
+        if(!$this->usuarioLogado()->temPermissaoPara('listar-ordens')){
+            return redirect()->back()->with('atencao', $this->usuarioLogado()->nome. ', você não tem permissão para acessar esse menu.');
+        }
+
         $ordem = $this->ordemModel->buscaOrdemOu404($codigo);
 
         $this->preparaItensDaOrdem($ordem);
@@ -170,6 +174,10 @@ class OrdensItens extends BaseController
             return redirect()->back();
         }
 
+        if(!$this->usuarioLogado()->temPermissaoPara('editar-ordens')){
+            return redirect()->back()->with('atencao', $this->usuarioLogado()->nome. ', você não tem permissão para acessar esse menu.');
+        }
+
         $validacao = service('validation');
 
         $regras = [
@@ -243,6 +251,10 @@ class OrdensItens extends BaseController
 
         if ($this->request->getMethod() !== 'post') {
             return redirect()->back();
+        }
+
+        if(!$this->usuarioLogado()->temPermissaoPara('editar-ordens')){
+            return redirect()->back()->with('atencao', $this->usuarioLogado()->nome. ', você não tem permissão para acessar esse menu.');
         }
 
         $validacao = service('validation');

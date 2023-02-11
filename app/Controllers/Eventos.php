@@ -15,6 +15,10 @@ class Eventos extends BaseController
 
     public function index()
     {
+        if(!$this->usuarioLogado()->temPermissaoPara('listar-eventos')){
+            return redirect()->back()->with('atencao', $this->usuarioLogado()->nome. ', você não tem permissão para acessar esse menu.');
+        }
+
         $data = [
             'titulo' => 'Listando os eventos'
         ];

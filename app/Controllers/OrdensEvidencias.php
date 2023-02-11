@@ -17,6 +17,10 @@ class OrdensEvidencias extends BaseController
 
     public function evidencias(string $codigo = null)
     {
+        if(!$this->usuarioLogado()->temPermissaoPara('listar-ordens')){
+            return redirect()->back()->with('atencao', $this->usuarioLogado()->nome. ', você não tem permissão para acessar esse menu.');
+        }
+
         $ordem = $this->ordemModel->buscaOrdemOu404($codigo);
 
         $ordem->evidencias = $this->ordemEvidenciaModel->select('evidencia')->where('ordem_id', $ordem->id)->findAll();
@@ -123,6 +127,10 @@ class OrdensEvidencias extends BaseController
     {
         if($this->request->getMethod() !== 'post'){
             return redirect()->back();
+        }
+
+        if(!$this->usuarioLogado()->temPermissaoPara('editar-ordens')){
+            return redirect()->back()->with('atencao', $this->usuarioLogado()->nome. ', você não tem permissão para acessar esse menu.');
         }
 
         $ordem = $this->ordemModel->buscaOrdemOu404($this->request->getPost('codigo'));

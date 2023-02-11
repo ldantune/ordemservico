@@ -21,6 +21,10 @@ class ContasPagar extends BaseController
 
     public function index()
     {
+        if(!$this->usuarioLogado()->temPermissaoPara('listar-contas')){
+            return redirect()->back()->with('atencao', $this->usuarioLogado()->nome. ', você não tem permissão para acessar esse menu.');
+        }
+
         $data = [
             'titulo' => 'Listando as contas',
         ];
@@ -55,6 +59,10 @@ class ContasPagar extends BaseController
 
     public function exibir(int $id)
     {
+        if(!$this->usuarioLogado()->temPermissaoPara('listar-contas')){
+            return redirect()->back()->with('atencao', $this->usuarioLogado()->nome. ', você não tem permissão para acessar esse menu.');
+        }
+
         $conta = $this->contaPagarModel->buscaContaOu404($id);
 
         $data = [
@@ -67,6 +75,10 @@ class ContasPagar extends BaseController
 
     public function criar()
     {
+        if(!$this->usuarioLogado()->temPermissaoPara('criar-contas')){
+            return redirect()->back()->with('atencao', $this->usuarioLogado()->nome. ', você não tem permissão para acessar esse menu.');
+        }
+
         $conta = new ContaPagar();
 
         $data = [
@@ -147,6 +159,10 @@ class ContasPagar extends BaseController
 
     public function editar(int $id)
     {
+        if(!$this->usuarioLogado()->temPermissaoPara('editar-contas')){
+            return redirect()->back()->with('atencao', $this->usuarioLogado()->nome. ', você não tem permissão para acessar esse menu.');
+        }
+
         $conta = $this->contaPagarModel->buscaContaOu404($id);
 
         $data = [
@@ -208,6 +224,9 @@ class ContasPagar extends BaseController
 
     public function excluir(int $id = null)
     {
+        if(!$this->usuarioLogado()->temPermissaoPara('excluir-contas')){
+            return redirect()->back()->with('atencao', $this->usuarioLogado()->nome. ', você não tem permissão para acessar esse menu.');
+        }
 
         $conta = $this->contaPagarModel->buscaContaOu404($id);
 

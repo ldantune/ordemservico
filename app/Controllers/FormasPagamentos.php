@@ -17,6 +17,10 @@ class FormasPagamentos extends BaseController
 
     public function index()
     {
+        if(!$this->usuarioLogado()->temPermissaoPara('listar-formas')){
+            return redirect()->back()->with('atencao', $this->usuarioLogado()->nome. ', você não tem permissão para acessar esse menu.');
+        }
+
         $data = [
             'titulo' => 'Listando as formas de pagamentos',
         ];
@@ -52,6 +56,10 @@ class FormasPagamentos extends BaseController
 
     public function exibir(int $id = null)
     {
+        if(!$this->usuarioLogado()->temPermissaoPara('listar-formas')){
+            return redirect()->back()->with('atencao', $this->usuarioLogado()->nome. ', você não tem permissão para acessar esse menu.');
+        }
+
         $forma = $this->buscaFormasOu404($id);
 
         $data = [
@@ -64,6 +72,10 @@ class FormasPagamentos extends BaseController
 
     public function criar()
     {
+        if(!$this->usuarioLogado()->temPermissaoPara('criar-formas')){
+            return redirect()->back()->with('atencao', $this->usuarioLogado()->nome. ', você não tem permissão para acessar esse menu.');
+        }
+
         $forma  = new FormaPagamento();
 
         $data = [
@@ -105,6 +117,9 @@ class FormasPagamentos extends BaseController
 
     public function editar(int $id = null)
     {
+        if(!$this->usuarioLogado()->temPermissaoPara('editar-formas')){
+            return redirect()->back()->with('atencao', $this->usuarioLogado()->nome. ', você não tem permissão para acessar esse menu.');
+        }
         $forma  = $this->buscaFormasOu404($id);
 
         if($forma->id < 3){
@@ -170,6 +185,10 @@ class FormasPagamentos extends BaseController
 
     public function excluir(int $id = null)
     {
+        if(!$this->usuarioLogado()->temPermissaoPara('editar-formas')){
+            return redirect()->back()->with('atencao', $this->usuarioLogado()->nome. ', você não tem permissão para acessar esse menu.');
+        }
+
         $forma  = $this->buscaFormasOu404($id);
 
         if($forma->id < 3){
