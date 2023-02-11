@@ -31,24 +31,25 @@ class Relatorios extends BaseController
         return view('Relatorios/Itens/itens', $data);
     }
 
-    public function GerarRelatorioProdutosEstoqueZerado(){
-       
+    public function GerarRelatorioProdutosEstoqueZerado()
+    {
+
         //TODO COLOCAR ACL AQUI
 
         $produtos = $this->itemModel
-                ->where('tipo', 'produto')
-                ->where('controla_estoque', true)
-                ->where('estoque <', 1)->findAll();
+            ->where('tipo', 'produto')
+            ->where('controla_estoque', true)
+            ->where('estoque <', 1)->findAll();
 
         $data = [
-            'titulo' => 'Relatório de produtos com estoque zerado ou negativo, gerado em: '.date('d/m/Y H:i'),
+            'titulo' => 'Relatório de produtos com estoque zerado ou negativo, gerado em: ' . date('d/m/Y H:i'),
             'produtos' => $produtos
         ];
 
         $nomeArquivo = 'relatorio-produtos-com-estoque-zerado-negativo.pdf';
 
         $dompdf = new Dompdf();
-        
+
         $dompdf->loadHtml(view('Relatorios/Itens/relatorio_estoque_zerado', $data));
         $dompdf->setPaper('A4', 'landscape');
         $dompdf->render();
@@ -56,10 +57,10 @@ class Relatorios extends BaseController
 
         unset($data);
         unset($dompdf);
-
     }
 
-    public function ItensMaisVendidos(){
+    public function ItensMaisVendidos()
+    {
 
         if (!$this->request->isAJAX()) {
             return redirect()->back();
@@ -104,13 +105,13 @@ class Relatorios extends BaseController
         $dataInicial = strtotime($post['data_inicial']);
         $dataFinal = strtotime($post['data_final']);
 
-        if($dataInicial > $dataFinal){
+        if ($dataInicial > $dataFinal) {
             $retorno['erro'] = 'Por favor verifique os erros abaixo e tente novamente';
             $retorno['erros_model'] = ['datas' => 'A Data Inicial não pode ser menor que a Data Final'];
 
             return $this->response->setJSON($retorno);
         }
-        
+
         $itens = $this->ordemItemModel->recuperaItensMaisVendidos($post['tipo'], $post['data_inicial'], $post['data_final']);
 
         $retorno['redirect'] = 'relatorios/itens-mais-vendidos';
@@ -121,28 +122,29 @@ class Relatorios extends BaseController
         return $this->response->setJSON($retorno);
     }
 
-    public function gerarRelatorioItensMaisVendidos(){
+    public function gerarRelatorioItensMaisVendidos()
+    {
 
         //TODO: COLOCAR ACL AQUI;
 
-        if(!session()->has('itens') || !session()->has('post')){
+        if (!session()->has('itens') || !session()->has('post')) {
             return redirect()->to(site_url('relatorios/itens'))->with('atencao', 'Não foi possível gerar o relatório. Tente novamente');
         }
 
         $itens = session()->get('itens');
         $post = session()->get('post');
 
-        
+
         $data = [
-            'titulo' => 'Relatório de ' . plural(ucfirst($post['tipo'])).' mais vendidos, gerado em: '.date('d/m/Y H:i'),
+            'titulo' => 'Relatório de ' . plural(ucfirst($post['tipo'])) . ' mais vendidos, gerado em: ' . date('d/m/Y H:i'),
             'itens' => $itens,
-            'periodo' => 'Compreendendo o período entre ' .date('d/m/Y H:i', strtotime($post['data_inicial'])). ' e ' .date('d/m/Y H:i', strtotime($post['data_final'])),
+            'periodo' => 'Compreendendo o período entre ' . date('d/m/Y H:i', strtotime($post['data_inicial'])) . ' e ' . date('d/m/Y H:i', strtotime($post['data_final'])),
         ];
 
         $nomeArquivo = 'relatorio-itens-mais-vendidos.pdf';
 
         $dompdf = new Dompdf();
-        
+
         $dompdf->loadHtml(view('Relatorios/Itens/relatorio_itens_mais_vendidos', $data));
         $dompdf->setPaper('A4', 'landscape');
         $dompdf->render();
@@ -163,8 +165,9 @@ class Relatorios extends BaseController
         return view('Relatorios/Ordens/ordens', $data);
     }
 
-    public function gerarRelatorioOrdens(){
-          
+    public function gerarRelatorioOrdens()
+    {
+
         if (!$this->request->isAJAX()) {
             return redirect()->back();
         }
@@ -207,7 +210,7 @@ class Relatorios extends BaseController
         $dataInicial = strtotime($post['data_inicial']);
         $dataFinal = strtotime($post['data_final']);
 
-        if($dataInicial > $dataFinal){
+        if ($dataInicial > $dataFinal) {
             $retorno['erro'] = 'Por favor verifique os erros abaixo e tente novamente';
             $retorno['erros_model'] = ['datas' => 'A Data Inicial não pode ser menor que a Data Final'];
 
@@ -217,10 +220,10 @@ class Relatorios extends BaseController
         session()->remove('ordens');
         session()->remove('post');
 
-        if($post['situacao'] === 'aberta'){
+        if ($post['situacao'] === 'aberta') {
 
             $ordens = $this->ordemModel->recuperaOrdensPelaSituacao($post['situacao'], $post['data_inicial'], $post['data_final']);
-            
+
             $retorno['redirect'] = 'relatorios/ordens-abertas';
 
             $post['viewRelatorio'] = 'relatorio_ordens_abertas';
@@ -228,10 +231,10 @@ class Relatorios extends BaseController
             session()->set('ordens', $ordens);
             session()->set('post', $post);
 
-            return $this->response->setJSON($retorno); 
+            return $this->response->setJSON($retorno);
         }
 
-        if($post['situacao'] === 'encerrada'){
+        if ($post['situacao'] === 'encerrada') {
 
             $ordens = $this->ordemModel->recuperaOrdensPelaSituacao($post['situacao'], $post['data_inicial'], $post['data_final']);
             $retorno['redirect'] = 'relatorios/ordens-encerradas';
@@ -241,10 +244,10 @@ class Relatorios extends BaseController
             session()->set('ordens', $ordens);
             session()->set('post', $post);
 
-            return $this->response->setJSON($retorno); 
+            return $this->response->setJSON($retorno);
         }
 
-        if($post['situacao'] === 'excluida'){
+        if ($post['situacao'] === 'excluida') {
 
             $ordens = $this->ordemModel->recuperaOrdensExcluidas($post['data_inicial'], $post['data_final']);
 
@@ -258,10 +261,10 @@ class Relatorios extends BaseController
             return $this->response->setJSON($retorno);
         }
 
-        if($post['situacao'] === 'aguardando'){
+        if ($post['situacao'] === 'aguardando') {
 
             $ordens = $this->ordemModel->recuperaOrdensPelaSituacao($post['situacao'], $post['data_inicial'], $post['data_final']);
-            
+
             $retorno['redirect'] = 'relatorios/ordens-aguardando-pagamento';
 
             $post['viewRelatorio'] = 'relatorio_ordens_nao_abertas';
@@ -269,13 +272,13 @@ class Relatorios extends BaseController
             session()->set('ordens', $ordens);
             session()->set('post', $post);
 
-            return $this->response->setJSON($retorno); 
+            return $this->response->setJSON($retorno);
         }
 
-        if($post['situacao'] === 'cancelada'){
+        if ($post['situacao'] === 'cancelada') {
 
             $ordens = $this->ordemModel->recuperaOrdensPelaSituacao($post['situacao'], $post['data_inicial'], $post['data_final']);
-            
+
             $retorno['redirect'] = 'relatorios/ordens-canceladas';
 
             $post['situacao'] = 'Com Boletos cancelados';
@@ -285,13 +288,13 @@ class Relatorios extends BaseController
             session()->set('ordens', $ordens);
             session()->set('post', $post);
 
-            return $this->response->setJSON($retorno); 
+            return $this->response->setJSON($retorno);
         }
 
-        if($post['situacao'] === 'nao_pago'){
+        if ($post['situacao'] === 'nao_pago') {
 
             $ordens = $this->ordemModel->recuperaOrdensPelaSituacao($post['situacao'], $post['data_inicial'], $post['data_final']);
-            
+
             $retorno['redirect'] = 'relatorios/ordens-nao-pagas';
 
             $post['situacao'] = 'Não pago';
@@ -304,7 +307,7 @@ class Relatorios extends BaseController
             return $this->response->setJSON($retorno);
         }
 
-        if($post['situacao'] === 'boleto'){
+        if ($post['situacao'] === 'boleto') {
 
             $ordens = $this->ordemModel->recuperaOrdensComBoleto($post['data_inicial'], $post['data_final']);
 
@@ -319,38 +322,197 @@ class Relatorios extends BaseController
 
             return $this->response->setJSON($retorno);
         }
-
-        echo '<pre>';
-        print_r($post);
-        exit;
     }
 
-    public function exibeRelatorioOrdens(){
-        
+    public function exibeRelatorioOrdens()
+    {
         //TODO: COLOCAR ACL AQUI;
-
-        if(!session()->has('ordens') || !session()->has('post')){
+        if (!session()->has('ordens') || !session()->has('post')) {
             return redirect()->to(site_url('relatorios/ordens'))->with('atencao', 'Não foi possível gerar o relatório. Tente novamente');
         }
 
         $ordens = session()->get('ordens');
         $post = session()->get('post');
 
-        
+
         $data = [
-            'titulo' => 'Relatório de ordens ' . plural(ucfirst($post['situacao'])).', gerado em: '.date('d/m/Y H:i'),
+            'titulo' => 'Relatório de ordens ' . plural(ucfirst($post['situacao'])) . ', gerado em: ' . date('d/m/Y H:i'),
             'ordens' => $ordens,
-            'periodo' => 'Compreendendo o período entre ' .date('d/m/Y H:i', strtotime($post['data_inicial'])). ' e ' .date('d/m/Y H:i', strtotime($post['data_final'])),
+            'periodo' => 'Compreendendo o período entre ' . date('d/m/Y H:i', strtotime($post['data_inicial'])) . ' e ' . date('d/m/Y H:i', strtotime($post['data_final'])),
         ];
 
         $viewRelatorio = $post['viewRelatorio'];
 
         $view = view("relatorios/Ordens/$viewRelatorio", $data);
 
-        $nomeArquivo = 'relatorio-ordens'.$post['situacao'].'.pdf';
+        $nomeArquivo = 'relatorio-ordens' . $post['situacao'] . '.pdf';
 
         $dompdf = new Dompdf();
-        
+
+        $dompdf->loadHtml($view);
+        $dompdf->setPaper('A4', 'landscape');
+        $dompdf->render();
+        $dompdf->stream($nomeArquivo, ['Attachment' => false]);
+
+        unset($data);
+        unset($dompdf);
+    }
+
+    //-------------Contas ----------//
+
+    public function contas()
+    {
+        $data = [
+            'titulo' => 'Relatórios de contas de fornecedores',
+        ];
+
+        return view('Relatorios/Contas/contas', $data);
+    }
+
+    public function gerarRelatorioContas()
+    {
+        if (!$this->request->isAJAX()) {
+            return redirect()->back();
+        }
+
+        // Envio o hash do token do form
+        $retorno['token'] = csrf_hash();
+
+        $validacao = service('validation');
+
+        $regras = [
+            'situacao' => 'required|in_list[abertas,pagas,vencidas]',
+            'data_inicial' => 'required',
+            'data_final' => 'required',
+        ];
+
+        $mensagens = [   // Errors
+            'situacao' => [
+                'required' => 'Por favor escolha uma situação de item',
+            ],
+            'data_inicial' => [
+                'required' => 'Por favor informe a data inicial de busca'
+            ],
+            'data_final' => [
+                'required' => 'Por favor informe a data final de busca'
+            ]
+        ];
+
+        $post = $this->request->getPost();
+
+        if ($post['situacao'] === 'vencidas') {
+            unset($regras['data_inicial']);
+            unset($regras['data_final']);
+        }
+
+        $validacao->setRules($regras, $mensagens);
+
+        if ($validacao->withRequest($this->request)->run() == false) {
+
+            $retorno['erro'] = 'Por favor verifique os erros abaixo e tente novamente';
+            $retorno['erros_model'] = $validacao->getErrors();
+
+            return $this->response->setJSON($retorno);
+        }
+
+        if (isset($post['data_inicial']) && isset($post['data_final'])) {
+            $dataInicial = strtotime($post['data_inicial']);
+            $dataFinal = strtotime($post['data_final']);
+
+            if ($dataInicial > $dataFinal) {
+                $retorno['erro'] = 'Por favor verifique os erros abaixo e tente novamente';
+                $retorno['erros_model'] = ['datas' => 'A Data Inicial não pode ser menor que a Data Final'];
+
+                return $this->response->setJSON($retorno);
+            }
+        }
+
+        session()->remove('contas');
+        session()->remove('post');
+
+
+        if($post['situacao'] === 'pagas'){
+
+            $situacao = 1;
+
+            $contas = $this->contaPagarModel->recuperarContasPagasOuAbertas($post['data_inicial'],$post['data_final'], $situacao);
+
+            $retorno['redirect'] = 'relatorios/contas-pagas';
+
+            session()->set('contas', $contas);
+            session()->set('post', $post);
+
+            return $this->response->setJSON($retorno);
+        }
+
+        if($post['situacao'] === 'abertas'){
+            
+            $situacao = 0;
+
+            $contas = $this->contaPagarModel->recuperarContasPagasOuAbertas($post['data_inicial'],$post['data_final'], $situacao);
+
+            // if(!empty($contas)){
+            //     foreach($contas as $key => $conta){
+            //         if($conta->data_vencimento < date('Y-m-d')){
+            //             unset($contas[$key]);
+            //         }
+            //     }
+            // }
+            $retorno['redirect'] = 'relatorios/contas-abertas';
+
+            session()->set('contas', $contas);
+            session()->set('post', $post);
+
+            return $this->response->setJSON($retorno);
+        }
+
+        if($post['situacao'] === 'vencidas'){
+            
+            $contas = $this->contaPagarModel->recuperarContasVencidas();
+
+            // if(!empty($contas)){
+            //     foreach($contas as $key => $conta){
+            //         if($conta->data_vencimento < date('Y-m-d')){
+            //             unset($contas[$key]);
+            //         }
+            //     }
+            // }
+            $retorno['redirect'] = 'relatorios/contas-vencidas';
+
+            session()->set('contas', $contas);
+            session()->set('post', $post);
+
+            return $this->response->setJSON($retorno);
+            
+        }
+    }
+
+    public function exibeRelatorioContas()
+    {
+        //TODO: COLOCAR ACL AQUI;
+        if (!session()->has('contas') || !session()->has('post')) {
+            return redirect()->to(site_url('relatorios/contas'))->with('atencao', 'Não foi possível gerar o relatório. Tente novamente');
+        }
+
+        $contas = session()->get('contas');
+        $post = session()->get('post');
+
+
+        $data = [
+            'titulo' => 'Relatório de contas ' . plural(ucfirst($post['situacao'])) . ', gerado em: ' . date('d/m/Y H:i'),
+            'contas' => $contas,
+        ];
+
+        if(isset($post['data_inicial']) && isset($post['data_final'])){
+            $data['periodo'] = 'Compreendendo o período entre ' . date('d/m/Y H:i', strtotime($post['data_inicial'])) . ' e ' . date('d/m/Y H:i', strtotime($post['data_final']));
+        }
+
+        $view = view("relatorios/Contas/relatorio_contas", $data);
+
+        $nomeArquivo = 'relatorio-contas' . $post['situacao'] . '.pdf';
+
+        $dompdf = new Dompdf();
+
         $dompdf->loadHtml($view);
         $dompdf->setPaper('A4', 'landscape');
         $dompdf->render();

@@ -115,7 +115,12 @@ $routes->group('relatorios', function($routes) {
     $routes->add('ordens-nao-pagas', 'Relatorios::exibeRelatorioOrdens');
     $routes->add('ordens-com-boleto', 'Relatorios::exibeRelatorioOrdens');
 
-    
+    //Contas
+    $routes->add('contas', 'Relatorios::contas');
+    $routes->add('gerarrelatoriocontas', 'Relatorios::gerarRelatorioContas');
+    $routes->add('contas-abertas', 'Relatorios::exibeRelatorioContas');
+    $routes->add('contas-pagas', 'Relatorios::exibeRelatorioContas');
+    $routes->add('contas-vencidas', 'Relatorios::exibeRelatorioContas');
 });
 /*
  * --------------------------------------------------------------------
