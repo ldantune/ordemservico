@@ -154,4 +154,55 @@ class UsuarioModel extends Model
 
         return $reposnsaveis;
     }
+
+    public function recuperaAtendentesParaRelatorio(string $dataInicial, string $dataFinal)
+    {
+        $dataInicial = str_replace('T', ' ', $dataInicial);
+        $dataFinal = str_replace('T', ' ', $dataFinal);
+
+        
+        $atributos = [
+            'usuarios.id',
+            'usuarios.nome',
+            'COUNT(ordens_responsaveis.usuario_abertura_id) AS quantidade_ordens',
+        ];
+        
+        $where = 'ordens.criado_em BETWEEN "' .$dataInicial . '" AND "' .$dataFinal . '"';
+
+        return $this->select($atributos)
+                    ->join('ordens_responsaveis', 'ordens_responsaveis.usuario_abertura_id = usuarios.id')
+                    ->join('ordens', 'ordens.id = ordens_responsaveis.ordem_id')
+                    ->where($where)
+                    ->withDeleted(true)
+                    ->groupBy('usuarios.nome')
+                    ->orderBy('quantidade_ordens', 'DESC')
+                    ->findAll();
+
+    }
+
+    public function recuperaResponsaveisParaRelatorio(string $dataInicial, string $dataFinal)
+    {
+        $dataInicial = str_replace('T', ' ', $dataInicial);
+        $dataFinal = str_replace('T', ' ', $dataFinal);
+
+        
+        $atributos = [
+            'usuarios.id',
+            'usuarios.nome',
+            'COUNT(ordens_responsaveis.usuario_responsavel_id) AS quantidade_ordens',
+        ];
+        
+        $where = 'ordens.atualizado_em BETWEEN "' .$dataInicial . '" AND "' .$dataFinal . '"';
+
+        return $this->select($atributos)
+                    ->join('ordens_responsaveis', 'ordens_responsaveis.usuario_responsavel_id = usuarios.id')
+                    ->join('ordens', 'ordens.id = ordens_responsaveis.ordem_id')
+                    ->where('ordens.situacao != ', 'aberta')
+                    ->where($where)
+                    ->withDeleted(true)
+                    ->groupBy('ordens_responsaveis.usuario_responsavel_id')
+                    ->orderBy('quantidade_ordens', 'DESC')
+                    ->findAll();
+
+    }
 }

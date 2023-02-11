@@ -121,6 +121,12 @@ $routes->group('relatorios', function($routes) {
     $routes->add('contas-abertas', 'Relatorios::exibeRelatorioContas');
     $routes->add('contas-pagas', 'Relatorios::exibeRelatorioContas');
     $routes->add('contas-vencidas', 'Relatorios::exibeRelatorioContas');
+
+    //Equipes
+    $routes->add('equipe', 'Relatorios::equipe');
+    $routes->add('gerarrelatorioequipes', 'Relatorios::gerarRelatorioEquipes');
+    $routes->add('desempenho-atendentes', 'Relatorios::exibeRelatorioEquipe');
+    $routes->add('desempenho-responsaveis', 'Relatorios::exibeRelatorioEquipe');
 });
 /*
  * --------------------------------------------------------------------

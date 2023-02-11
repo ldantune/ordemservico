@@ -521,4 +521,137 @@ class Relatorios extends BaseController
         unset($data);
         unset($dompdf);
     }
+
+    //-------------Equipe ----------//
+
+    public function equipe()
+    {
+        $data = [
+            'titulo' => 'Relatórios de desempenho da equipe',
+        ];
+
+        return view('Relatorios/Equipe/equipe', $data);
+    }
+
+    public function gerarRelatorioEquipes(){
+
+        if (!$this->request->isAJAX()) {
+            return redirect()->back();
+        }
+
+        // Envio o hash do token do form
+        $retorno['token'] = csrf_hash();
+
+        $validacao = service('validation');
+
+        $regras = [
+            'grupo' => 'required|in_list[atendentes,responsaveis]',
+            'data_inicial' => 'required',
+            'data_final' => 'required',
+        ];
+
+        $mensagens = [   // Errors
+            'grupo' => [
+                'required' => 'Por favor escolha uma situação de item',
+            ],
+            'data_inicial' => [
+                'required' => 'Por favor informe a data inicial de busca'
+            ],
+            'data_final' => [
+                'required' => 'Por favor informe a data final de busca'
+            ]
+        ];
+
+        $validacao->setRules($regras, $mensagens);
+
+        if ($validacao->withRequest($this->request)->run() == false) {
+
+            $retorno['erro'] = 'Por favor verifique os erros abaixo e tente novamente';
+            $retorno['erros_model'] = $validacao->getErrors();
+
+            return $this->response->setJSON($retorno);
+        }
+
+        $post = $this->request->getPost();
+
+        $dataInicial = strtotime($post['data_inicial']);
+        $dataFinal = strtotime($post['data_final']);
+
+        if ($dataInicial > $dataFinal) {
+            $retorno['erro'] = 'Por favor verifique os erros abaixo e tente novamente';
+            $retorno['erros_model'] = ['datas' => 'A Data Inicial não pode ser menor que a Data Final'];
+
+            return $this->response->setJSON($retorno);
+        }
+
+        session()->remove('usuarios');
+        session()->remove('post');
+
+        if($post['grupo'] === 'atendentes'){
+
+            $usuarios = $this->usuarioModel->recuperaAtendentesParaRelatorio($post['data_inicial'],$post['data_final']);
+
+            $retorno['redirect'] = 'relatorios/desempenho-atendentes';
+
+            $post['grupo'] = "Atendentes";
+            $post['temFinalTitulo'] = false;
+
+            session()->set('usuarios', $usuarios);
+            session()->set('post', $post);
+
+            return $this->response->setJSON($retorno);
+        }
+
+        if($post['grupo'] === 'responsaveis'){
+
+            $usuarios = $this->usuarioModel->recuperaResponsaveisParaRelatorio($post['data_inicial'],$post['data_final']);
+
+            $retorno['redirect'] = 'relatorios/desempenho-responsaveis';
+
+            $post['grupo'] = "Responsáveis";
+            $post['temFinalTitulo'] = true;
+
+            session()->set('usuarios', $usuarios);
+            session()->set('post', $post);
+
+            return $this->response->setJSON($retorno);
+        }
+    }
+
+    public function exibeRelatorioEquipe()
+    {
+        //TODO: COLOCAR ACL AQUI;
+        if (!session()->has('usuarios') || !session()->has('post')) {
+            return redirect()->to(site_url('relatorios/equipe'))->with('atencao', 'Não foi possível gerar o relatório. Tente novamente');
+        }
+
+        $usuarios = session()->get('usuarios');
+        $post = session()->get('post');
+
+        $finalTitulo = ($post['temFinalTitulo'] === true ? '<br>Sendo computadas as ordens que não estão em aberto' : '');
+        $titulo = 'Relatório de desempenho dos ' .ucfirst($post['grupo']) . ', gerado em: ' . date('d/m/Y H:i') . $finalTitulo;
+
+        $data = [
+            'titulo' => $titulo,
+            'usuarios' => $usuarios,
+            'periodo' => 'Compreendendo o período entre ' . date('d/m/Y H:i', strtotime($post['data_inicial'])) . ' e ' . date('d/m/Y H:i', strtotime($post['data_final']))
+        ];
+
+        $view = view("relatorios/Equipe/relatorio_equipe", $data);
+
+        $nomeArquivo = 'relatorio-desempenho' . $post['grupo'] . '.pdf';
+
+        $dompdf = new Dompdf();
+
+        $dompdf->loadHtml($view);
+
+        $orientation = ($post['temFinalTitulo'] === true ? 'landscape' : 'portrait');
+
+        $dompdf->setPaper('A4', $orientation);
+        $dompdf->render();
+        $dompdf->stream($nomeArquivo, ['Attachment' => false]);
+
+        unset($data);
+        unset($dompdf);
+    }
 }
