@@ -246,42 +246,78 @@ class Relatorios extends BaseController
 
         if($post['situacao'] === 'excluida'){
 
-            $ordens = $this->ordemModel->recuperaOrdensPelaSituacao($post['situacao'], $post['data_inicial'], $post['data_final']);
-            echo '<pre>';
-            print_r($ordens);
-            exit;
+            $ordens = $this->ordemModel->recuperaOrdensExcluidas($post['data_inicial'], $post['data_final']);
+
+            $retorno['redirect'] = 'relatorios/ordens-excluidas';
+
+            $post['viewRelatorio'] = 'relatorio_ordens_nao_abertas';
+
+            session()->set('ordens', $ordens);
+            session()->set('post', $post);
+
+            return $this->response->setJSON($retorno);
         }
 
         if($post['situacao'] === 'aguardando'){
 
             $ordens = $this->ordemModel->recuperaOrdensPelaSituacao($post['situacao'], $post['data_inicial'], $post['data_final']);
-            echo '<pre>';
-            print_r($ordens);
-            exit;
+            
+            $retorno['redirect'] = 'relatorios/ordens-aguardando-pagamento';
+
+            $post['viewRelatorio'] = 'relatorio_ordens_nao_abertas';
+
+            session()->set('ordens', $ordens);
+            session()->set('post', $post);
+
+            return $this->response->setJSON($retorno); 
         }
 
         if($post['situacao'] === 'cancelada'){
 
             $ordens = $this->ordemModel->recuperaOrdensPelaSituacao($post['situacao'], $post['data_inicial'], $post['data_final']);
-            echo '<pre>';
-            print_r($ordens);
-            exit;
+            
+            $retorno['redirect'] = 'relatorios/ordens-canceladas';
+
+            $post['situacao'] = 'Com Boletos cancelados';
+
+            $post['viewRelatorio'] = 'relatorio_ordens_nao_abertas';
+
+            session()->set('ordens', $ordens);
+            session()->set('post', $post);
+
+            return $this->response->setJSON($retorno); 
         }
 
         if($post['situacao'] === 'nao_pago'){
 
             $ordens = $this->ordemModel->recuperaOrdensPelaSituacao($post['situacao'], $post['data_inicial'], $post['data_final']);
-            echo '<pre>';
-            print_r($ordens);
-            exit;
+            
+            $retorno['redirect'] = 'relatorios/ordens-nao-pagas';
+
+            $post['situacao'] = 'Não pago';
+
+            $post['viewRelatorio'] = 'relatorio_ordens_nao_abertas';
+
+            session()->set('ordens', $ordens);
+            session()->set('post', $post);
+
+            return $this->response->setJSON($retorno);
         }
 
         if($post['situacao'] === 'boleto'){
 
             $ordens = $this->ordemModel->recuperaOrdensComBoleto($post['data_inicial'], $post['data_final']);
-            echo '<pre>';
-            print_r($ordens);
-            exit;
+
+            $retorno['redirect'] = 'relatorios/ordens-com-boleto';
+
+            $post['situacao'] = 'Ordens processadas com boleto';
+
+            $post['viewRelatorio'] = 'relatorio_ordens_com_boleto';
+
+            session()->set('ordens', $ordens);
+            session()->set('post', $post);
+
+            return $this->response->setJSON($retorno);
         }
 
         echo '<pre>';

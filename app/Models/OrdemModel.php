@@ -157,9 +157,6 @@ class OrdemModel extends Model
             case 'nao_pago':
                 $campoDate = 'atualizado_em';
                 break;
-            case 'excluida':
-                $campoDate = 'deletado_em';
-                break;
         }
 
         $dataInicial = str_replace('T', ' ', $dataInicial);
@@ -182,6 +179,33 @@ class OrdemModel extends Model
                     ->join('clientes', 'clientes.id = ordens.cliente_id')
                     ->where('situacao', $situacao)
                     ->where($where)
+                    ->orderBy('situacao', 'ASC')
+                    //->builder->getCompiledSelect();
+                    ->findAll();
+    }
+
+    public function recuperaOrdensExcluidas(string $dataInicial, string $dataFinal)
+    {
+        $dataInicial = str_replace('T', ' ', $dataInicial);
+        $dataFinal = str_replace('T', ' ', $dataFinal);
+
+        $where = 'ordens.deletado_em BETWEEN "' .$dataInicial . '" AND "' .$dataFinal . '"';
+
+        $atributos = [
+            'ordens.codigo',
+            'ordens.situacao',
+            'ordens.valor_ordem',
+            'ordens.criado_em',
+            'ordens.atualizado_em',
+            'ordens.deletado_em',
+            'clientes.nome',
+            'clientes.cpf',
+        ];
+
+        return $this->select($atributos)
+                    ->join('clientes', 'clientes.id = ordens.cliente_id')
+                    ->where($where)
+                    ->onlyDeleted()
                     ->orderBy('situacao', 'ASC')
                     //->builder->getCompiledSelect();
                     ->findAll();
