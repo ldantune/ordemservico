@@ -70,4 +70,9 @@ abstract class BaseController extends Controller
 
         exit;
     }
+
+    protected function usuarioLogado()
+    {
+        return service('autenticacao')->pegaUsuarioLogado();
+    }
 }

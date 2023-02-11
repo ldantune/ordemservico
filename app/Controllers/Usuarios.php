@@ -20,6 +20,11 @@ class Usuarios extends BaseController
 
     public function index()
     {
+
+        if(!$this->usuarioLogado()->temPermissaoPara('listar-usuarios')){
+            return redirect()->back()->with('atencao', $this->usuarioLogado()->nome. ', você não tem permissão para acessar esse menu.');
+        }
+
         $data = [
             'titulo' => 'Listando os usuários do sistema',
         ];
@@ -107,6 +112,10 @@ class Usuarios extends BaseController
 
     public function exibir(int $id = null)
     {
+        if(!$this->usuarioLogado()->temPermissaoPara('listar-usuarios')){
+            return redirect()->back()->with('atencao', $this->usuarioLogado()->nome. ', você não tem permissão para acessar esse menu.');
+        }
+
         $usuario  = $this->buscaUsuarioOu404($id);
 
         $data = [
@@ -119,6 +128,10 @@ class Usuarios extends BaseController
 
     public function criar()
     {
+        if(!$this->usuarioLogado()->temPermissaoPara('criar-usuarios')){
+            return redirect()->back()->with('atencao', $this->usuarioLogado()->nome. ', você não tem permissão para acessar esse menu.');
+        }
+
         $usuario  = new Usuario();
 
         //dd($usuario);
@@ -162,6 +175,10 @@ class Usuarios extends BaseController
 
     public function editar(int $id = null)
     {
+        if(!$this->usuarioLogado()->temPermissaoPara('editar-usuarios')){
+            return redirect()->back()->with('atencao', $this->usuarioLogado()->nome. ', você não tem permissão para acessar esse menu.');
+        }
+
         $usuario  = $this->buscaUsuarioOu404($id);
 
         $data = [
@@ -218,6 +235,10 @@ class Usuarios extends BaseController
 
     public function editarImagem(int $id = null)
     {
+        if(!$this->usuarioLogado()->temPermissaoPara('editar-usuarios')){
+            return redirect()->back()->with('atencao', $this->usuarioLogado()->nome. ', você não tem permissão para acessar esse menu.');
+        }
+
         $usuario  = $this->buscaUsuarioOu404($id);
 
         $data = [
@@ -313,6 +334,10 @@ class Usuarios extends BaseController
 
     public function excluir(int $id = null)
     {
+        if(!$this->usuarioLogado()->temPermissaoPara('excluir-usuarios')){
+            return redirect()->back()->with('atencao', $this->usuarioLogado()->nome. ', você não tem permissão para acessar esse menu.');
+        }
+
         $usuario  = $this->buscaUsuarioOu404($id);
 
         if ($usuario->deletado_em != null) {
@@ -345,6 +370,10 @@ class Usuarios extends BaseController
 
     public function desfazerExclusao(int $id = null)
     {
+        if(!$this->usuarioLogado()->temPermissaoPara('editar-usuarios')){
+            return redirect()->back()->with('atencao', $this->usuarioLogado()->nome. ', você não tem permissão para acessar esse menu.');
+        }
+
         $usuario  = $this->buscaUsuarioOu404($id);
 
         if ($usuario->deletado_em == null) {
@@ -359,6 +388,10 @@ class Usuarios extends BaseController
 
     public function grupos(int $id = null)
     {
+        if(!$this->usuarioLogado()->temPermissaoPara('editar-usuarios')){
+            return redirect()->back()->with('atencao', $this->usuarioLogado()->nome. ', você não tem permissão para acessar esse menu.');
+        }
+
         $usuario  = $this->buscaUsuarioOu404($id);
 
         $usuario->grupos = $this->grupoUsuarioModel->recuperaGruposDoUsuario($usuario->id, 5);
@@ -467,6 +500,9 @@ class Usuarios extends BaseController
     }
     public function removeGrupo(int $principal_id = null)
     {
+        if(!$this->usuarioLogado()->temPermissaoPara('editar-usuarios')){
+            return redirect()->back()->with('atencao', $this->usuarioLogado()->nome. ', você não tem permissão para acessar esse menu.');
+        }
 
         if ($this->request->getMethod() === 'post') {
 

@@ -104,6 +104,7 @@
 
         <div class="container-fluid">
           <?php echo $this->include('Layout/_mensagens'); ?>
+          <?php d(usuario_logado()) ?>
           <?php echo $this->renderSection('conteudo'); ?>
         </div>
 
