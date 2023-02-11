@@ -18,7 +18,7 @@ class Ordem extends Entity
         if ($this->deletado_em != null) {
 
             if(url_is('relatorios*')){
-                return '<span class="text-white">Excluído</span>';
+                return '<span class="text-white">Excluída</span>';
             }
 
             $icone = '<span class="text-white">Excluído</span> <i class="fa fa-undo"></i>&nbsp;Desfazer';

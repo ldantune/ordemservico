@@ -223,7 +223,6 @@ class Relatorios extends BaseController
             
             $retorno['redirect'] = 'relatorios/ordens-abertas';
 
-            $post['situacao'] = 'Abertas';
             $post['viewRelatorio'] = 'relatorio_ordens_abertas';
 
             session()->set('ordens', $ordens);
@@ -235,9 +234,14 @@ class Relatorios extends BaseController
         if($post['situacao'] === 'encerrada'){
 
             $ordens = $this->ordemModel->recuperaOrdensPelaSituacao($post['situacao'], $post['data_inicial'], $post['data_final']);
-            echo '<pre>';
-            print_r($ordens);
-            exit;
+            $retorno['redirect'] = 'relatorios/ordens-encerradas';
+
+            $post['viewRelatorio'] = 'relatorio_ordens_nao_abertas';
+
+            session()->set('ordens', $ordens);
+            session()->set('post', $post);
+
+            return $this->response->setJSON($retorno); 
         }
 
         if($post['situacao'] === 'excluida'){
