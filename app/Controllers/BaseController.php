@@ -75,4 +75,18 @@ abstract class BaseController extends Controller
     {
         return service('autenticacao')->pegaUsuarioLogado();
     }
+
+    protected function registraAcaoDoUsuario(string $texto)
+    {
+        $grupo = ($this->usuarioLogado()->is_cliente ? 'Cliente' : 'Usuário');
+
+        $info = [
+            'id'    => $this->usuarioLogado()->id,
+            'nome'  => $this->usuarioLogado()->nome,
+            'email' => $this->usuarioLogado()->email,
+            'ip_address' => $this->request->getIPAddress(),
+        ];
+        
+        log_message('info', "[ACAO-USUARIO-ID-{id}] $grupo com o nome {nome} $texto com o e-mail {email} e com o IP {ip_address}", $info);
+    }
 }

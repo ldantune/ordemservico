@@ -22,6 +22,9 @@ class Usuarios extends BaseController
     {
 
         if(!$this->usuarioLogado()->temPermissaoPara('listar-usuarios')){
+
+            $this->registraAcaoDoUsuario('tentou listar os usuários');
+
             return redirect()->back()->with('atencao', $this->usuarioLogado()->nome. ', você não tem permissão para acessar esse menu.');
         }
 

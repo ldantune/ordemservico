@@ -205,4 +205,28 @@ class UsuarioModel extends Model
                     ->findAll();
 
     }
+
+    public function recuperaUsuarioParaLog(string $termo = null)
+    {
+        if($termo === null){
+            return [];
+        }
+        $clienteModel = new \App\Models\ClienteModel();
+
+        $clienteUsuariosIDs = array_column($clienteModel->asArray()->select('usuario_id')->findAll(), 'usuario_id');
+
+        $atributos = [
+            'usuarios.id',
+            'usuarios.nome',
+            'usuarios.email'
+        ];
+
+        $usuarios = $this->asArray()->select($atributos)
+                        ->whereNotIn('usuarios.id', $clienteUsuariosIDs)
+                        ->withDeleted(true)
+                        ->like('usuarios.nome', $termo)
+                        ->findAll();
+
+        return $usuarios;
+    }
 }

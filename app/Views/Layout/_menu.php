@@ -4,7 +4,7 @@
 
   <li class="<?php echo (url_is('/') ? 'active' : '') ?>"><a href="<?php echo site_url('/') ?>"> <i class="icon-home"></i>Home </a></li>
 
-  <?php if (usuario_logado()->is_cliente) : ?>
+  <?php if (usuario_logado()->is_admin || usuario_logado()->is_cliente) : ?>
     <li class="<?php echo (url_is('ordens*') ? 'active' : '') ?>">
       <a href="<?php echo site_url('ordens/minhas') ?>"> <i class="fa fa-list"></i>Minhas Ordens </a>
     </li>
@@ -74,6 +74,12 @@
         <li><a href="<?php echo site_url('relatorios/contas') ?>">Contas de fornecedores</a></li>
         <li><a href="<?php echo site_url('relatorios/equipe') ?>">Desempenho da equipe</a></li>
       </ul>
+    </li>
+  <?php endif; ?>
+
+  <?php if (usuario_logado()->temPermissaoPara('visualizar-logs')) : ?>
+    <li class="<?php echo (url_is('logs*') ? 'active' : '') ?>">
+      <a href="<?php echo site_url('logs') ?>"> <i class="fa fa-usd"></i>Analizar Logs</a>
     </li>
   <?php endif; ?>
 

@@ -38,6 +38,9 @@ class Ordens extends BaseController
     public function index()
     {
         if(!$this->usuarioLogado()->temPermissaoPara('listar-ordens')){
+
+            $this->registraAcaoDoUsuario('tentou listar as ordens de serviço');
+
             return redirect()->back()->with('atencao', $this->usuarioLogado()->nome. ', você não tem permissão para acessar esse menu.');
         }
 

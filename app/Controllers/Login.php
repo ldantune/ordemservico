@@ -38,6 +38,8 @@ class Login extends BaseController
             return $this->response->setJSON($retorno);
         }
 
+        $this->registraAcaoDoUsuario('Logou na aplicação');
+
         $usuarioLogado = $autenticacao->pegaUsuarioLogado();
 
         session()->setFlashdata('sucesso', "Olá $usuarioLogado->nome, que bom que está de volta!");
