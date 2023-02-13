@@ -24,13 +24,13 @@ class Operacoes
   public function __construct(object $ordem = null, object $formaPagamento = null)
   {
     $this->options = [
-      'client_id' => getenv('gerenciaNetClientId'),
-      'client_secret' => getenv('gerenciaNetClientSecret'),
-      'sandbox' => getenv('gerenciaNetSandbox'), // altere conforme o ambiente (true = homologação e false = producao)
+      'client_id' => env('gerenciaNetClientId'),
+      'client_secret' => env('gerenciaNetClientSecret'),
+      'sandbox' => env('gerenciaNetSandbox'), // altere conforme o ambiente (true = homologação e false = producao)
       'timeout' => 60,
     ];
 
-    $this->gerenciaNetDesconto = (int) getenv('gerenciaNetDesconto');
+    $this->gerenciaNetDesconto = (int) env('gerenciaNetDesconto');
 
     $this->ordem = $ordem;
     $this->formaPagamento = $formaPagamento;

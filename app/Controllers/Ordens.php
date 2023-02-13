@@ -499,11 +499,11 @@ class Ordens extends BaseController
 
         if ($ordem->itens !== null) {
 
-            $data['formasPagamentos'] = $this->formaPagamentoModel->where('id !=', getenv('formaPagamentoCortesia'))->where('ativo', true)->findAll();
+            $data['formasPagamentos'] = $this->formaPagamentoModel->where('id !=', env('formaPagamentoCortesia'))->where('ativo', true)->findAll();
 
-            $data['descontoBoleto'] =  getenv('gerenciaNetDesconto') / 100 . '%';
+            $data['descontoBoleto'] =  env('gerenciaNetDesconto') / 100 . '%';
         } else {
-            $data['formasPagamentos'] = $this->formaPagamentoModel->where('id', getenv('formaPagamentoCortesia'))->findAll();
+            $data['formasPagamentos'] = $this->formaPagamentoModel->where('id', env('formaPagamentoCortesia'))->findAll();
         }
 
 
@@ -909,7 +909,7 @@ class Ordens extends BaseController
 
     private function defineMensagensDesconto(string $valorDesconto)
     {
-        $descontoBoleto = getenv('gerenciaNetDesconto') / 100 . '%';
+        $descontoBoleto = env('gerenciaNetDesconto') / 100 . '%';
 
         $descontoAdicionado = "R$ " . number_format($valorDesconto, 2);
 

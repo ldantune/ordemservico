@@ -61,21 +61,27 @@ class Home extends BaseController
 
         $produtosMaisVendidos = $this->ordemItemModel->recuperaItensMaisVendidosGraficos(date('Y'), 'produto', 5);
 
-        if(!empty($produtosMaisVendidos)){
-            $data['produtosMaisVendidos'] = $produtosMaisVendidos;
-        }
+        // if(!empty($produtosMaisVendidos)){
+        //     $data['produtosMaisVendidos'] = $produtosMaisVendidos;
+        // }
+
+        $data['produtosMaisVendidos'] = $produtosMaisVendidos;
 
         $servicosMaisVendidos = $this->ordemItemModel->recuperaItensMaisVendidosGraficos(date('Y'), 'serviço', 5);
 
-        if(!empty($servicosMaisVendidos)){
-            $data['servicosMaisVendidos'] = $servicosMaisVendidos;
-        }
+        // if(!empty($servicosMaisVendidos)){
+        //     $data['servicosMaisVendidos'] = $servicosMaisVendidos;
+        // }
+
+        $data['servicosMaisVendidos'] = $servicosMaisVendidos;
 
         $atendimentosPorMes = $this->ordemModel->recuperaOrdensPorMesGrafico(date('Y'));
 
-        if(!empty($atendimentosPorMes)){
-            $data['atendimentosPorMes'] = $atendimentosPorMes;
-        }
+        // if(!empty($atendimentosPorMes)){
+        //     $data['atendimentosPorMes'] = $atendimentosPorMes;
+        // }
+
+        $data['atendimentosPorMes'] = $atendimentosPorMes;
 
         return $data;
     }

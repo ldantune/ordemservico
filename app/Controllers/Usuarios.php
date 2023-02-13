@@ -511,7 +511,7 @@ class Usuarios extends BaseController
 
             $grupoUsuario = $this->buscaGrupoUsuarioOu404($principal_id);
 
-            if ($grupoUsuario->grupo_id == getenv('GRUPO_CLIENTE')) {
+            if ($grupoUsuario->grupo_id == env('GRUPO_CLIENTE')) {
                 return redirect()->to(site_url("usuarios/exibir/$grupoUsuario->usuario_id"))->with("info", "Não é permitida a exclusão do usuário do grupo de Clientes");
             }
 

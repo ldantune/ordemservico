@@ -394,7 +394,7 @@ class Clientes extends BaseController
 
 
         $grupoUsuario = [
-            'grupo_id' => getenv('GRUPO_CLIENTE'),
+            'grupo_id' => env('GRUPO_CLIENTE'),
             'usuario_id' => $this->usuarioModel->getInsertID(),
         ];
 

@@ -7,6 +7,29 @@
 
 <?php echo $this->section('estilos') ?>
 
+<link rel="stylesheet" type="text/css" href="<?php echo site_url('recursos/vendor/selectize/selectize.bootstrap4.css'); ?>" />
+
+<style>
+  /* Estilizando o select para acompanhar a formatação do template */
+
+  .selectize-input,
+  .selectize-control.single .selectize-input.input-active {
+    background: #2d3035 !important;
+  }
+
+  .selectize-dropdown,
+  .selectize-input,
+  .selectize-input input {
+    color: #777;
+  }
+
+  .selectize-input {
+    /*        height: calc(2.4rem + 2px);*/
+    border: 1px solid #444951;
+    border-radius: 0;
+  }
+</style>
+
 <?php echo $this->endSection() ?>
 
 
@@ -23,10 +46,10 @@
 
       <?php echo form_open('/', ['id' => 'form'], ['id' => "$conta->id"]) ?>
 
-      <?php echo $this->include('ContasPagar/_form'); ?>
+      <?php echo $this->include('Contas/_form'); ?>
       <div class="form-group mt-5 mb-2">
         <input id="btn-salvar" value="Salvar" class="btn btn-danger mr-2" type="submit">
-        <a href="<?php echo site_url("contas/exibir/$conta->id"); ?>" class="btn btn-secondary ml-2">Voltar</a>
+        <a href="<?php echo site_url("contas"); ?>" class="btn btn-secondary ml-2">Voltar</a>
       </div>
 
       <?php echo form_close() ?>
@@ -42,17 +65,56 @@
 
 <?php echo $this->section('scripts') ?>
 
+<script type="text/javascript" src="<?php echo site_url('recursos/vendor/selectize/selectize.min.js'); ?>"></script>
 <script src="<?php echo site_url('recursos/vendor/mask/jquery.mask.min.js') ?>"></script>
 <script src="<?php echo site_url('recursos/vendor/mask/app.js') ?>"></script>
 
 
 <script>
   $(document).ready(function() {
+
+    var $select = $(".fornecedor").selectize({
+      create: false,
+      //sortField: "text"
+
+      maxIem: 1,
+      valueField: 'id',
+      labelField: 'razao',
+      searchField: ['razao', 'cnpj'],
+
+      load: function(query, callback) {
+
+        if (query.length < 4) {
+          return callback();
+        }
+
+        $.ajax({
+          url: '<?php echo site_url("contas/buscaFornecedores/") ?>?termo=' + 
+              encodeURIComponent(query),
+          success: function(response) {
+
+            $select.options= response;
+
+            callback(response);
+
+          },
+          error: function() {
+            alert('Não foi possível processar a solicitação. Por favor entre em contato com suporte técnico.');
+          }
+        });
+      }
+
+    });
+
+
+
+
+
     $("#form").on('submit', function(e) {
       e.preventDefault();
       $.ajax({
         type: 'POST',
-        url: '<?php echo site_url('contas/atualizar'); ?>',
+        url: '<?php echo site_url('contas/cadastrar'); ?>',
         data: new FormData(this),
         dataType: 'json',
         contentType: false,
@@ -63,24 +125,21 @@
           $("#btn-salvar").val('Por favor aguarde...');
         },
         success: function(response) {
-
+          $('.limpaDiv').html('');
           $("#btn-salvar").val('Salvar');
           $("#btn-salvar").removeAttr("disabled");
           $('[name=csrf_ordem]').val(response.token);
 
           if (!response.erro) {
-            if (response.info) {
-              $("#response").html('<div class="alert alert-info" role="alert">' + response.info + '</div>');
-            } else {
-              window.location.href = "<?php echo site_url("contas/exibir/$conta->id"); ?>";
-            }
+            window.location.href = "<?php echo site_url("contas/exibir/"); ?>" + response.id;
           }
 
           if (response.erro) {
             $("#response").html('<div class="alert alert-danger" role="alert">' + response.erro + '</div>');
             if (response.erros_model) {
               $.each(response.erros_model, function(key, value) {
-                $("#response").append('<ul class="list-unstyled"><li class="text-danger">' + value + '</li></ul>');
+                //$("#response").append('<ul class="list-unstyled"><li class="text-danger">' + value + '</li></ul>');
+                $('.' + key).html(value);
               });
             }
           }
@@ -89,6 +148,7 @@
           alert('Não foi possível processar a solicitação. Por favor entre em contato com suporte técnico.');
           $("#btn-salvar").val('Salvar');
           $("#btn-salvar").removeAttr("disabled");
+          $('.limpaDiv').html('');
         }
       });
     });

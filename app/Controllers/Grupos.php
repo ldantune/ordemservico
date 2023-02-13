@@ -258,13 +258,13 @@ class Grupos extends BaseController
 
         $grupo  = $this->buscaGrupoOu404($id);
 
-        if($grupo->id == getenv('GRUPO_ADMINISTRADOR')){
+        if($grupo->id == env('GRUPO_ADMINISTRADOR')){
             return redirect()
                 ->back()
                 ->with('info', 'Não é necessário atribuir ou remover permissões de acesso para o grupo <b>' .esc($grupo->nome). '</b>, pois esse grupo é Administrador.');
         }
 
-        if($grupo->id == getenv('GRUPO_CLIENTE')){
+        if($grupo->id == env('GRUPO_CLIENTE')){
             return redirect()
                 ->back()
                 ->with('info', 'Não é necessário atribuir ou remover permissões de acesso para o grupo de Clientes');

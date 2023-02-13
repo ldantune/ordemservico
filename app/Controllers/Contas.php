@@ -5,7 +5,7 @@ namespace App\Controllers;
 use App\Controllers\BaseController;
 use App\Entities\ContaPagar;
 
-class ContasPagar extends BaseController
+class Contas extends BaseController
 {
 
     private $contaPagarModel;
@@ -29,7 +29,7 @@ class ContasPagar extends BaseController
             'titulo' => 'Listando as contas',
         ];
 
-        return view('ContasPagar/index', $data);
+        return view('Contas/index', $data);
     }
 
     public function recuperaContas()
@@ -70,7 +70,7 @@ class ContasPagar extends BaseController
             'conta' => $conta
         ];
 
-        return view('ContasPagar/exibir', $data);
+        return view('Contas/exibir', $data);
     }
 
     public function criar()
@@ -86,7 +86,7 @@ class ContasPagar extends BaseController
             'conta' => $conta
         ];
 
-        return view('ContasPagar/criar', $data);
+        return view('Contas/criar', $data);
     }
 
     public function cadastrar()
@@ -170,7 +170,7 @@ class ContasPagar extends BaseController
             'conta' => $conta
         ];
 
-        return view('ContasPagar/editar', $data);
+        return view('Contas/editar', $data);
     }
 
     public function atualizar()
@@ -243,7 +243,7 @@ class ContasPagar extends BaseController
         ];
 
 
-        return view('ContasPagar/excluir', $data);
+        return view('Contas/excluir', $data);
     }
 
     private function cadastraEventoDaConta(object $conta) : void

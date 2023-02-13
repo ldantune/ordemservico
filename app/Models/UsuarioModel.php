@@ -160,24 +160,23 @@ class UsuarioModel extends Model
         $dataInicial = str_replace('T', ' ', $dataInicial);
         $dataFinal = str_replace('T', ' ', $dataFinal);
 
-        
+
         $atributos = [
             'usuarios.id',
             'usuarios.nome',
             'COUNT(ordens_responsaveis.usuario_abertura_id) AS quantidade_ordens',
         ];
-        
-        $where = 'ordens.criado_em BETWEEN "' .$dataInicial . '" AND "' .$dataFinal . '"';
+
+        $where = 'ordens.criado_em BETWEEN "' . $dataInicial . '" AND "' . $dataFinal . '"';
 
         return $this->select($atributos)
-                    ->join('ordens_responsaveis', 'ordens_responsaveis.usuario_abertura_id = usuarios.id')
-                    ->join('ordens', 'ordens.id = ordens_responsaveis.ordem_id')
-                    ->where($where)
-                    ->withDeleted(true)
-                    ->groupBy('usuarios.nome')
-                    ->orderBy('quantidade_ordens', 'DESC')
-                    ->findAll();
-
+            ->join('ordens_responsaveis', 'ordens_responsaveis.usuario_abertura_id = usuarios.id')
+            ->join('ordens', 'ordens.id = ordens_responsaveis.ordem_id')
+            ->where($where)
+            ->withDeleted(true)
+            ->groupBy('usuarios.nome')
+            ->orderBy('quantidade_ordens', 'DESC')
+            ->findAll();
     }
 
     public function recuperaResponsaveisParaRelatorio(string $dataInicial, string $dataFinal)
@@ -185,30 +184,29 @@ class UsuarioModel extends Model
         $dataInicial = str_replace('T', ' ', $dataInicial);
         $dataFinal = str_replace('T', ' ', $dataFinal);
 
-        
+
         $atributos = [
             'usuarios.id',
             'usuarios.nome',
             'COUNT(ordens_responsaveis.usuario_responsavel_id) AS quantidade_ordens',
         ];
-        
-        $where = 'ordens.atualizado_em BETWEEN "' .$dataInicial . '" AND "' .$dataFinal . '"';
+
+        $where = 'ordens.atualizado_em BETWEEN "' . $dataInicial . '" AND "' . $dataFinal . '"';
 
         return $this->select($atributos)
-                    ->join('ordens_responsaveis', 'ordens_responsaveis.usuario_responsavel_id = usuarios.id')
-                    ->join('ordens', 'ordens.id = ordens_responsaveis.ordem_id')
-                    ->where('ordens.situacao != ', 'aberta')
-                    ->where($where)
-                    ->withDeleted(true)
-                    ->groupBy('ordens_responsaveis.usuario_responsavel_id')
-                    ->orderBy('quantidade_ordens', 'DESC')
-                    ->findAll();
-
+            ->join('ordens_responsaveis', 'ordens_responsaveis.usuario_responsavel_id = usuarios.id')
+            ->join('ordens', 'ordens.id = ordens_responsaveis.ordem_id')
+            ->where('ordens.situacao != ', 'aberta')
+            ->where($where)
+            ->withDeleted(true)
+            ->groupBy('ordens_responsaveis.usuario_responsavel_id')
+            ->orderBy('quantidade_ordens', 'DESC')
+            ->findAll();
     }
 
     public function recuperaUsuarioParaLog(string $termo = null)
     {
-        if($termo === null){
+        if ($termo === null) {
             return [];
         }
         $clienteModel = new \App\Models\ClienteModel();
@@ -221,13 +219,18 @@ class UsuarioModel extends Model
             'usuarios.email'
         ];
 
-        $usuarios = $this->asArray()->select($atributos)
-                        ->whereNotIn('usuarios.id', $clienteUsuariosIDs)
-                        ->withDeleted(true)
-                        ->like('usuarios.nome', $termo)
-                        ->findAll();
+        if (empty($clienteUsuariosIDs)) {
+            return $this->asArray()->select($atributos)
+                ->withDeleted(true)
+                ->like('usuarios.nome', $termo)
+                ->findAll();
+        }
 
-        return $usuarios;
+        return $this->asArray()->select($atributos)
+            ->whereNotIn('usuarios.id', $clienteUsuariosIDs)
+            ->withDeleted(true)
+            ->like('usuarios.nome', $termo)
+            ->findAll();
     }
 
     public function recuperaAtendenteGrafico(string $anoEscolhido)
@@ -240,12 +243,12 @@ class UsuarioModel extends Model
         ];
 
         return $this->select($atributos)
-                    ->join('ordens_responsaveis', 'ordens_responsaveis.usuario_abertura_id = usuarios.id')
-                    ->join('ordens', 'ordens.id = ordens_responsaveis.ordem_id')
-                    ->where('YEAR(ordens.criado_em)', $anoEscolhido)
-                    ->withDeleted(true)
-                    ->groupBy('usuarios.nome')
-                    ->orderBy('quantidade_ordens', 'DESC')
-                    ->findAll();
+            ->join('ordens_responsaveis', 'ordens_responsaveis.usuario_abertura_id = usuarios.id')
+            ->join('ordens', 'ordens.id = ordens_responsaveis.ordem_id')
+            ->where('YEAR(ordens.criado_em)', $anoEscolhido)
+            ->withDeleted(true)
+            ->groupBy('usuarios.nome')
+            ->orderBy('quantidade_ordens', 'DESC')
+            ->findAll();
     }
 }

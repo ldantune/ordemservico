@@ -48,8 +48,8 @@
 <script>
   $(document).ready(function() {
 
-    <?php echo $this->include('clientes/_checkmail'); ?>
-    <?php echo $this->include('clientes/_viacep'); ?>
+    <?php echo $this->include('Clientes/_checkmail'); ?>
+    <?php echo $this->include('Clientes/_viacep'); ?>
 
     // $("#form").LoadingOverlay("show");
     $("#form").on('submit', function(e) {
