@@ -229,4 +229,23 @@ class UsuarioModel extends Model
 
         return $usuarios;
     }
+
+    public function recuperaAtendenteGrafico(string $anoEscolhido)
+    {
+        $atributos = [
+            'usuarios.id',
+            'usuarios.nome',
+            'COUNT(ordens_responsaveis.usuario_abertura_id) AS quantidade_ordens',
+            'YEAR(ordens.criado_em) AS ano',
+        ];
+
+        return $this->select($atributos)
+                    ->join('ordens_responsaveis', 'ordens_responsaveis.usuario_abertura_id = usuarios.id')
+                    ->join('ordens', 'ordens.id = ordens_responsaveis.ordem_id')
+                    ->where('YEAR(ordens.criado_em)', $anoEscolhido)
+                    ->withDeleted(true)
+                    ->groupBy('usuarios.nome')
+                    ->orderBy('quantidade_ordens', 'DESC')
+                    ->findAll();
+    }
 }

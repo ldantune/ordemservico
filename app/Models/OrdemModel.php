@@ -3,6 +3,7 @@
 namespace App\Models;
 
 use CodeIgniter\Model;
+use PhpParser\Node\Stmt\Return_;
 
 class OrdemModel extends Model
 {
@@ -234,6 +235,43 @@ class OrdemModel extends Model
                     ->orderBy('situacao', 'ASC')
                     ->groupBy('ordens.codigo')
                     //->builder->getCompiledSelect();
+                    ->findAll();
+    }
+
+    public function recuperaClientesMaisAssiduos(string $anoEscolhido)
+    {
+        $atributos = [
+            'clientes.id',
+            'clientes.nome',
+            'COUNT(*) AS ordens',
+            'SUM(ordens.valor_ordem) AS valor_gerado',
+            'YEAR(ordens.criado_em) AS ano',
+        ];
+
+        return $this->select($atributos)
+                    ->join('clientes', 'clientes.id = ordens.cliente_id')
+                    ->where('YEAR(ordens.criado_em)', $anoEscolhido)
+                    ->where('ordens.situacao', 'encerrada')
+                    ->where('ordens.valor_ordem !=', null)
+                    ->withDeleted(true)
+                    ->groupBy('clientes.nome')
+                    ->orderBy('ordens', 'DESC')
+                    ->findAll();
+    }
+
+    public function recuperaOrdensPorMesGrafico(string $anoEscolhido)
+    {
+        $atributos = [
+            'COUNT(id) AS total_ordens',
+            'YEAR(ordens.criado_em) AS ano',
+            'MONTH(ordens.criado_em) AS mes_numerico',
+            'MONTHNAME(ordens.criado_em) AS mes_nome'
+        ];
+
+        return $this->select($atributos)
+                    ->where('YEAR(ordens.criado_em)', $anoEscolhido)
+                    ->groupBy('mes_nome')
+                    ->orderBy('mes_numerico', 'ASC')
                     ->findAll();
     }
 }

@@ -69,4 +69,23 @@ class OrdemItemModel extends Model
                     //->builder->getCompiledSelect();
                     ->findAll();
     }
+
+    public function recuperaItensMaisVendidosGraficos(string $anoEscolhido, string $tipo, int $quantidade)
+    {
+        $atributos = [
+            'itens.nome',
+            'itens.tipo',
+            'SUM(item_quantidade) AS quantidade',
+        ];
+
+        return $this->select($atributos)
+                    ->join('itens', 'itens.id = ordens_itens.item_id')
+                    ->join('ordens', 'ordens.id = ordens_itens.ordem_id')
+                    ->where('YEAR(ordens.criado_em)', $anoEscolhido)
+                    ->where('itens.tipo', $tipo)
+                    ->where('ordens.situacao', 'encerrada')
+                    ->groupBy('itens.nome')
+                    ->orderBy('quantidade', 'DESC')
+                    ->findAll($quantidade);
+    }
 }
