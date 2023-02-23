@@ -53,83 +53,84 @@
   </div>
 </div>
 
-<table id="pdf">
-  <thead>
-    <tr>
-      <th scope="col">Item</th>
-      <th scope="col">Tipo</th>
-      <th scope="col">Preço unitário</th>
-      <th scope="col">Quantidade</th>
-      <th scope="col">Subtotal</th>
-    </tr>
-  </thead>
-  <tbody>
-
-    <?php
-    $valorProdutos = 0;
-    $valorServicos = 0;
-    ?>
-
-    <?php foreach ($ordem->itens as $item) : ?>
+<?php if (!empty($ordem->itens)) : ?>
+  <table id="pdf">
+    <thead>
+      <tr>
+        <th scope="col">Item</th>
+        <th scope="col">Tipo</th>
+        <th scope="col">Preço unitário</th>
+        <th scope="col">Quantidade</th>
+        <th scope="col">Subtotal</th>
+      </tr>
+    </thead>
+    <tbody>
 
       <?php
-      if ($item->tipo === 'produto') {
-        $valorProdutos += $item->preco_venda * $item->item_quantidade;
-      } else {
-        $valorServicos += $item->preco_venda * $item->item_quantidade;
-      }
+      $valorProdutos = 0;
+      $valorServicos = 0;
       ?>
+      <?php foreach ($ordem->itens as $item) : ?>
 
-      <tr>
-        <td><?php echo ellipsize($item->nome, 32, .5); ?></td>
-        <td><?php echo esc(ucfirst($item->tipo)); ?></td>
-        <td>R$ <?php echo esc(number_format($item->preco_venda, 2)); ?></td>
-        <td><?php echo $item->item_quantidade ?></td>
-        <td>R$<?php echo esc(number_format($item->item_quantidade * $item->preco_venda, 2)) ?></td>
-      </tr>
-
-    <?php endforeach; ?>
-  </tbody>
-  <tfoot>
-    <tr>
-      <td colspan="3" style="border: none;"></td>
-      <td colspan="">
-        <label>Valor produtos: </label>
-      </td>
-      <td>R$ <?php echo esc(number_format($valorProdutos, 2)); ?></td>
-    </tr>
-    <tr>
-      <td colspan="3" style="border: none; background: none !important;"></td>
-      <td colspan="">
-        <label>Valor serviços: </label>
-      </td>
-      <td>R$ <?php echo esc(number_format($valorServicos, 2)); ?></td>
-    </tr>
-    <tr>
-      <td colspan="3" style="border: none;"></td>
-      <td colspan="">
-        <label>Valor desconto: </label>
-      </td>
-      <td>R$ <?php echo esc(number_format($ordem->valor_desconto, 2)); ?></td>
-    </tr>
-    <tr>
-    <td colspan="3" style="border: none; background: none !important;"></td>
-      <td colspan="">
-        <label>Valor total da ordem: </label>
-      </td>
-      <td>R$ <?php echo esc(number_format($valorServicos + $valorProdutos, 2)); ?></td>
-    </tr>
-    <tr>
-      <td colspan="3" style="border: none;"></td>
-      <td colspan="">
-        <label>Valor total com desconto: </label>
-      </td>
-      <td>R$
         <?php
-        $valorItens = $valorServicos + $valorProdutos;
-        echo esc(number_format($valorItens - $ordem->valor_desconto, 2));
+        if ($item->tipo === 'produto') {
+          $valorProdutos += $item->preco_venda * $item->item_quantidade;
+        } else {
+          $valorServicos += $item->preco_venda * $item->item_quantidade;
+        }
         ?>
-      </td>
-    </tr>
-  </tfoot>
-</table>
+
+        <tr>
+          <td><?php echo ellipsize($item->nome, 32, .5); ?></td>
+          <td><?php echo esc(ucfirst($item->tipo)); ?></td>
+          <td>R$ <?php echo esc(number_format($item->preco_venda, 2)); ?></td>
+          <td><?php echo $item->item_quantidade ?></td>
+          <td>R$<?php echo esc(number_format($item->item_quantidade * $item->preco_venda, 2)) ?></td>
+        </tr>
+
+      <?php endforeach; ?>
+    </tbody>
+    <tfoot>
+      <tr>
+        <td colspan="3" style="border: none;"></td>
+        <td colspan="">
+          <label>Valor produtos: </label>
+        </td>
+        <td>R$ <?php echo esc(number_format($valorProdutos, 2)); ?></td>
+      </tr>
+      <tr>
+        <td colspan="3" style="border: none; background: none !important;"></td>
+        <td colspan="">
+          <label>Valor serviços: </label>
+        </td>
+        <td>R$ <?php echo esc(number_format($valorServicos, 2)); ?></td>
+      </tr>
+      <tr>
+        <td colspan="3" style="border: none;"></td>
+        <td colspan="">
+          <label>Valor desconto: </label>
+        </td>
+        <td>R$ <?php echo esc(number_format($ordem->valor_desconto, 2)); ?></td>
+      </tr>
+      <tr>
+        <td colspan="3" style="border: none; background: none !important;"></td>
+        <td colspan="">
+          <label>Valor total da ordem: </label>
+        </td>
+        <td>R$ <?php echo esc(number_format($valorServicos + $valorProdutos, 2)); ?></td>
+      </tr>
+      <tr>
+        <td colspan="3" style="border: none;"></td>
+        <td colspan="">
+          <label>Valor total com desconto: </label>
+        </td>
+        <td>R$
+          <?php
+          $valorItens = $valorServicos + $valorProdutos;
+          echo esc(number_format($valorItens - $ordem->valor_desconto, 2));
+          ?>
+        </td>
+      </tr>
+    </tfoot>
+  </table>
+<?php endif; ?>

@@ -12,7 +12,7 @@
 
 <?php echo $this->section('conteudo') ?>
 <div class="row">
-  <div class="col-lg-3">
+  <div class="col-lg-5">
     <div class="user-block block">
 
 

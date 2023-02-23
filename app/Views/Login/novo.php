@@ -19,7 +19,7 @@
                 <div class="logo">
                     <h1><?php echo $titulo; ?></h1>
                 </div>
-                <p>Lorem ipsum dolor sit amet, consectetur adipisicing elit.</p>
+                <p>Sistema de gestão de ordens de serviços</p>
             </div>
         </div>
     </div>

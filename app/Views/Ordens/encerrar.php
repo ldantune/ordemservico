@@ -187,7 +187,7 @@
             <div class="card-header" id="headingTwo">
               <h2 class="mb-0">
                 <button class="btn btn-link btn-block text-left collapsed" type="button" data-toggle="collapse" data-target="#collapseTwo" aria-expanded="false" aria-controls="collapseTwo">
-                  Escolha a forma de pagamento para o encerramento da ordem
+                  Escolha a forma <br class="d-sm-none"> de pagamento para o <br class="d-sm-none"> encerramento da ordem
                 </button>
               </h2>
             </div>

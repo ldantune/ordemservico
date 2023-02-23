@@ -232,7 +232,7 @@
           <a class="dropdown-item" href="<?php echo site_url("ordensevidencias/evidencias/$ordem->codigo"); ?>">Evidências da ordem</a>
 
           <a class="dropdown-item" id="btn-enviar-email" href="<?php echo site_url("ordens/email/$ordem->codigo"); ?>">Enviar por e-mail</a>
-          <a class="dropdown-item" href="<?php echo site_url("ordens/gerarpdf/$ordem->codigo"); ?>">Gerar PDF</a>
+          <a class="dropdown-item" href="<?php echo site_url("ordens/gerarpdf/$ordem->codigo"); ?>" target="_blank">Gerar PDF</a>
           <div class="dropdown-divider"></div>
 
           <?php if ($ordem->deletado_em === null) : ?>
