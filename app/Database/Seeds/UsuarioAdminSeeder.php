@@ -34,7 +34,7 @@ class UsuarioAdminSeeder extends Seeder
         $usuario = [
             'nome' => 'Lucas Antunes',
             'email' => 'ldantune@gmail.com',
-            'password' => 'Debs615790',
+            'password' => '615790',
             'ativo' => true
         ];
 

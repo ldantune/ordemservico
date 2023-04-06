@@ -1,0 +1,1 @@
+<img src="<?php echo site_url('web/'); ?>/site_em_manutencao.png" alt="" style="width: 100%; height: 100%;" >

@@ -21,6 +21,8 @@ class Exceptions extends BaseConfig
      * @var bool
      */
     public $log = true;
+    public $logDeprecations = true;
+    public $deprecationLogLevel = true;
 
     /**
      * --------------------------------------------------------------------------

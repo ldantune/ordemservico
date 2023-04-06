@@ -30,17 +30,10 @@ class Home extends BaseController
             'titulo' => 'Home'
         ];
 
-        if (!$this->usuarioLogado()->temPermissaoPara('visualizar-home')) {
-            return view('Home/index_simples', $data);
+        if(env('CI_ENVIRONMENT') === 'development'){
+            return view('Web/dev');
         }
-
-        $data['totalClientes'] = $this->clienteModel->countAllResults();
-        $data['totalFornecedores'] = $this->fornecedorModel->countAllResults();
-        $data['totalItens'] = $this->itemModel->countAllResults();
-        $data['totalOrdensEncerradas'] = $this->ordemModel->where('situacao', 'encerrada')->countAllResults();
-
-        $data = $this->preparaDadosGraficosParaView($data);
-
+        
         return view('Home/index', $data);
     }
 
@@ -61,11 +54,11 @@ class Home extends BaseController
 
         $produtosMaisVendidos = $this->ordemItemModel->recuperaItensMaisVendidosGraficos(date('Y'), 'produto', 5);
 
-        // if(!empty($produtosMaisVendidos)){
-        //     $data['produtosMaisVendidos'] = $produtosMaisVendidos;
-        // }
+        if(!empty($produtosMaisVendidos)){
+           $data['produtosMaisVendidos'] = $produtosMaisVendidos;
+        }
 
-        $data['produtosMaisVendidos'] = $produtosMaisVendidos;
+        //$data['produtosMaisVendidos'] = $produtosMaisVendidos;
 
         $servicosMaisVendidos = $this->ordemItemModel->recuperaItensMaisVendidosGraficos(date('Y'), 'serviço', 5);
 
